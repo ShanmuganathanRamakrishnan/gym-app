@@ -1,0 +1,57 @@
+{
+    "theme": {
+        "bg": "#F7F7F7",
+        "surface": "#FFFFFF",
+        "text": "#0A0A0A",
+        "muted": "#6B6B6B",
+        "accent": "#00C2A8"
+    },
+    "components": {
+        "AppBar": {
+            "props": [
+                "title",
+                "avatarUrl"
+            ]
+        },
+        "WorkoutCard": {
+            "variants": [
+                "notStarted",
+                "inProgress",
+                "completed"
+            ],
+            "props": [
+                "title",
+                "subtitle",
+                "progress",
+                "ctaLabel"
+            ]
+        },
+        "TemplateCard": {
+            "props": [
+                "title",
+                "icon"
+            ]
+        },
+        "RecentRow": {
+            "props": [
+                "title",
+                "date",
+                "detail"
+            ]
+        },
+        "BottomNav": {
+            "props": [
+                "selectedIndex"
+            ]
+        }
+    },
+    "screens": {
+        "Home": [
+            "AppBar",
+            "WorkoutCard",
+            "TemplateRow",
+            "RecentList",
+            "BottomNav"
+        ]
+    }
+}
