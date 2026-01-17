@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'ai_screen.dart';
+import 'workout_screen.dart';
 
 void main() {
   runApp(const GymApp());
@@ -98,7 +99,7 @@ class _MainShellState extends State<MainShell> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    WorkoutsScreen(),
+    WorkoutScreen(),
     AIScreen(),
     ProfileScreen(),
   ];
@@ -137,21 +138,7 @@ class _MainShellState extends State<MainShell> {
   }
 }
 
-/// Placeholder: Workouts screen
-class WorkoutsScreen extends StatelessWidget {
-  const WorkoutsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Workouts')),
-      body: const Center(
-        child: Text('Workouts Library',
-            style: TextStyle(color: AppColors.textSecondary)),
-      ),
-    );
-  }
-}
+/// Legacy WorkoutsScreen placeholder - now using WorkoutScreen from workout_screen.dart
 
 /// Placeholder: Profile screen (includes Progress/Stats)
 class ProfileScreen extends StatelessWidget {
