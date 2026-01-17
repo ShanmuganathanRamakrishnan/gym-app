@@ -284,7 +284,7 @@ class _AuthFormWidgetState extends State<AuthFormWidget> {
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     )
                   : Text(widget.isLogin ? 'Log In' : 'Sign Up'),

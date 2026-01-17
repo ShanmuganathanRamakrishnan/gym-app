@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'main.dart'; // Import AppColors
 
 // ============================================================================
 // AppBar Component
@@ -26,11 +27,12 @@ class GymAppBar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.only(right: 16),
           child: CircleAvatar(
             radius: 18,
-            backgroundColor: const Color(0xFF00C2A8),
+            backgroundColor: AppColors.accent,
             backgroundImage:
                 avatarUrl != null ? NetworkImage(avatarUrl!) : null,
             child: avatarUrl == null
-                ? const Icon(Icons.person, color: Colors.white, size: 20)
+                ? const Icon(Icons.person,
+                    color: AppColors.textPrimary, size: 20)
                 : null,
           ),
         ),
@@ -66,11 +68,11 @@ class WorkoutCard extends StatelessWidget {
   Color get _accentColor {
     switch (variant) {
       case WorkoutCardVariant.notStarted:
-        return const Color(0xFF00C2A8);
+        return AppColors.accent; // Strava orange
       case WorkoutCardVariant.inProgress:
-        return const Color(0xFFFFA726);
+        return const Color(0xFFFFA726); // warning
       case WorkoutCardVariant.completed:
-        return const Color(0xFF4CAF50);
+        return const Color(0xFF4CAF50); // success
     }
   }
 
@@ -88,6 +90,7 @@ class WorkoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: AppColors.surface,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -128,7 +131,7 @@ class WorkoutCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: progress,
                   minHeight: 8,
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: AppColors.surfaceLight,
                   valueColor: AlwaysStoppedAnimation<Color>(_accentColor),
                 ),
               ),
@@ -145,7 +148,7 @@ class WorkoutCard extends StatelessWidget {
                 onPressed: onCtaPressed,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _accentColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.textPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -203,15 +206,9 @@ class TemplateCard extends StatelessWidget {
       child: Container(
         width: 100,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface, // Dark surface
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0D000000), // black with 5% opacity
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
+          border: Border.all(color: AppColors.divider),
         ),
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -219,7 +216,7 @@ class TemplateCard extends StatelessWidget {
           children: [
             Icon(
               _icon,
-              color: const Color(0xFF00C2A8),
+              color: AppColors.accent, // Strava orange
               size: 32,
             ),
             const SizedBox(height: 8),
@@ -228,7 +225,7 @@ class TemplateCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF0A0A0A),
+                color: AppColors.textPrimary, // White text
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
@@ -261,7 +258,7 @@ class RecentRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface, // Dark surface
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.all(16),
@@ -271,12 +268,12 @@ class RecentRow extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0x1A00C2A8), // accent with 10% opacity
+              color: AppColors.accentDim, // Orange with 20% opacity
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.fitness_center,
-              color: Color(0xFF00C2A8),
+              color: AppColors.accent, // Strava orange
               size: 20,
             ),
           ),
@@ -289,7 +286,7 @@ class RecentRow extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF0A0A0A),
+                    color: AppColors.textPrimary, // White
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -297,7 +294,7 @@ class RecentRow extends StatelessWidget {
                   date,
                   style: const TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF6B6B6B),
+                    color: AppColors.textMuted, // Muted gray
                   ),
                 ),
               ],
@@ -307,13 +304,13 @@ class RecentRow extends StatelessWidget {
             detail,
             style: const TextStyle(
               fontSize: 14,
-              color: Color(0xFF6B6B6B),
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(width: 8),
           const Icon(
             Icons.chevron_right,
-            color: Color(0xFF6B6B6B),
+            color: AppColors.textMuted,
           ),
         ],
       ),
@@ -341,9 +338,9 @@ class GymBottomNav extends StatelessWidget {
       currentIndex: selectedIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white,
-      selectedItemColor: const Color(0xFF00C2A8),
-      unselectedItemColor: const Color(0xFF6B6B6B),
+      backgroundColor: AppColors.surface, // Dark surface
+      selectedItemColor: AppColors.accent, // Strava orange
+      unselectedItemColor: AppColors.textSecondary,
       showUnselectedLabels: true,
       items: const [
         BottomNavigationBarItem(

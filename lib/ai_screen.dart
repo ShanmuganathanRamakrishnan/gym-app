@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
+import 'main.dart'; // Import AppColors
 
 /// AI Coach placeholder screen
 class AIScreen extends StatelessWidget {
   const AIScreen({super.key});
-
-  // Light theme colors matching design-spec.json
-  static const accent = Color(0xFF00C2A8);
-  static const accentDim = Color(0x3300C2A8);
-  static const textPrimary = Color(0xFF0A0A0A);
-  static const textSecondary = Color(0xFF6B6B6B);
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +22,12 @@ class AIScreen extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: accentDim,
+                  color: AppColors.accentDim,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(
                   Icons.auto_awesome,
-                  color: accent,
+                  color: AppColors.accent,
                   size: 40,
                 ),
               ),
@@ -50,7 +45,7 @@ class AIScreen extends StatelessWidget {
                 'Coming Soon',
                 style: TextStyle(
                   fontSize: 16,
-                  color: accent,
+                  color: AppColors.accent,
                   fontWeight: FontWeight.w500,
                 ),
               ),
