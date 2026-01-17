@@ -246,7 +246,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 _buildMeta(Icons.timer_outlined, workout['duration'] as String),
                 const SizedBox(width: 16),
                 _buildMeta(Icons.format_list_numbered,
-                    '${workout['exercises']} exercises'),
+                    '${exercises.length} exercises'),
               ],
             ),
             const SizedBox(height: 16),
