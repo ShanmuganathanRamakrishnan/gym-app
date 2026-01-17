@@ -1,0 +1,51 @@
+{
+    "common": {
+        "ok": "OK",
+        "cancel": "Cancel",
+        "loading": "Loading...",
+        "error": "Something went wrong",
+        "retry": "Retry"
+    },
+    "auth": {
+        "signIn": "Sign in",
+        "signUp": "Sign up",
+        "createAccount": "Create account",
+        "email": "Email",
+        "password": "Password",
+        "fullName": "Full name",
+        "forgotPassword": "Forgot password?",
+        "noAccount": "Don't have an account?",
+        "hasAccount": "Already have an account?"
+    },
+    "home": {
+        "goodMorning": "Good Morning",
+        "goodAfternoon": "Good Afternoon",
+        "goodEvening": "Good Evening",
+        "todaysWorkout": "Today's Workout",
+        "quickStart": "Quick Start",
+        "recent": "Recent",
+        "startWorkout": "Start Workout"
+    },
+    "workouts": {
+        "title": "Workouts",
+        "myRoutines": "My Routines",
+        "templates": "Templates",
+        "exercises": "exercises",
+        "duration": "min"
+    },
+    "ai": {
+        "title": "AI Coach",
+        "comingSoon": "Coming Soon",
+        "description": "Get personalized workout recommendations powered by AI."
+    },
+    "profile": {
+        "title": "Profile",
+        "progress": "Progress",
+        "settings": "Settings",
+        "account": "Account",
+        "notifications": "Notifications",
+        "appearance": "Appearance",
+        "help": "Help & Support",
+        "signOut": "Sign Out"
+    }
+}

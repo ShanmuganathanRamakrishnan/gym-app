@@ -1,0 +1,33 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Error prevention
+    avoid_print: true
+    avoid_empty_else: true
+    avoid_types_as_parameter_names: true
+    no_duplicate_case_values: true
+    
+    # Style
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    
+    # Documentation
+    public_member_api_docs: false  # Enable for stricter docs
+    
+    # Formatting
+    curly_braces_in_flow_control_structures: true
+    
+    # Performance
+    avoid_unnecessary_containers: true
+    sized_box_for_whitespace: true
+
+analyzer:
+  errors:
+    missing_required_param: error
+    missing_return: error
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
