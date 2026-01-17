@@ -59,10 +59,10 @@ class HomeScreen extends StatelessWidget {
             Text('Alex', style: Theme.of(context).textTheme.headlineMedium),
           ],
         ),
-        CircleAvatar(
+        const CircleAvatar(
           radius: 20,
           backgroundColor: AppColors.surfaceAlt,
-          child: const Icon(Icons.person, color: AppColors.textMuted),
+          child: Icon(Icons.person, color: AppColors.textMuted),
         ),
       ],
     );
@@ -71,17 +71,17 @@ class HomeScreen extends StatelessWidget {
   Widget _buildQuickStart(BuildContext context) {
     return Row(
       children: [
-        _QuickCard(icon: Icons.fitness_center, label: 'Full Body'),
+        const _QuickCard(icon: Icons.fitness_center, label: 'Full Body'),
         const SizedBox(width: AppSpacing.sm),
-        _QuickCard(icon: Icons.directions_run, label: 'Cardio'),
+        const _QuickCard(icon: Icons.directions_run, label: 'Cardio'),
         const SizedBox(width: AppSpacing.sm),
-        _QuickCard(icon: Icons.self_improvement, label: 'Stretch'),
+        const _QuickCard(icon: Icons.self_improvement, label: 'Stretch'),
       ].map((e) => Expanded(child: e)).toList(),
     );
   }
 
   Widget _buildRecentList(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
         _RecentItem(title: 'Leg Day', date: 'Yesterday', duration: '52 min'),
         _RecentItem(

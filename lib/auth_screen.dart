@@ -89,7 +89,8 @@ class _AuthScreenState extends State<AuthScreen> {
                           child: Text(
                             'or continue with',
                             style: TextStyle(
-                              color: AppColors.textSecondary.withOpacity(0.7),
+                              color: AppColors.textSecondary
+                                  .withValues(alpha: 0.7),
                               fontSize: 13,
                             ),
                           ),

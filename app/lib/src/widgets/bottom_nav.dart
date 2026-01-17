@@ -1,6 +1,5 @@
 // Bottom navigation bar widget
 import 'package:flutter/material.dart';
-import '../theme.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int selectedIndex;

@@ -32,7 +32,7 @@ class GymApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.dark(
+        colorScheme: const ColorScheme.dark(
           surface: AppColors.surface,
           primary: AppColors.accent,
           onPrimary: Colors.white,
