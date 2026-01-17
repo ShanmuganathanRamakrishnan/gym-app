@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'ai_screen.dart';
+import 'workout_screen.dart';
 
 void main() {
   runApp(const GymApp());
@@ -98,7 +99,7 @@ class _MainShellState extends State<MainShell> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    WorkoutsScreen(),
+    WorkoutScreen(),
     AIScreen(),
     ProfileScreen(),
   ];
