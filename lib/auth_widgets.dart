@@ -180,7 +180,7 @@ class OnboardingSlide extends StatelessWidget {
                     child: Icon(
                       Icons.fitness_center,
                       size: 48,
-                      color: AppColors.accent.withOpacity(0.5),
+                      color: AppColors.accent.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -369,7 +369,8 @@ class _AuthFormState extends State<AuthForm> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: AppColors.accent.withOpacity(0.6),
+                disabledBackgroundColor:
+                    AppColors.accent.withValues(alpha: 0.6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

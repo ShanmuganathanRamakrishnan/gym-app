@@ -39,11 +39,11 @@ class AIScreen extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.xl),
-              SizedBox(
+              const SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: null, // Disabled
-                  child: const Text('Tell me my goals'),
+                  child: Text('Tell me my goals'),
                 ),
               ),
             ],
