@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'community_post_sheet.dart';
+import 'screens/active_workout_screen.dart';
 
 /// Sample mock data for Home screen
 final Map<String, dynamic> sampleHomeData = {
@@ -196,7 +197,15 @@ class HomeScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ActiveWorkoutScreen(
+                      workoutName: workout['title'] as String,
+                    ),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,

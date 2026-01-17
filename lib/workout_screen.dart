@@ -4,6 +4,7 @@ import 'models/routine.dart';
 import 'services/routine_store.dart';
 import 'data/prebuilt_routines.dart';
 import 'screens/explore_routine_detail.dart';
+import 'screens/active_workout_screen.dart';
 
 /// Mock user experience level (would come from UserProfile)
 const ExperienceLevel _userExperienceLevel = ExperienceLevel.intermediate;
@@ -136,7 +137,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       BuildContext context, Map<String, dynamic> workout) {
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to active workout flow
+        // Start suggested workout
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ActiveWorkoutScreen(
+              workoutName: workout['title'] as String,
+            ),
+          ),
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(18),
@@ -369,10 +377,19 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: () {
-          // TODO: Start empty workout
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const ActiveWorkoutScreen(
+                workoutName: 'Freestyle Workout',
+              ),
+            ),
+          );
         },
         icon: const Icon(Icons.add, size: 20),
-        label: const Text('Start Empty Workout'),
+        label: const Text(
+          'Start Empty Workout',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+        ),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.textSecondary,
           side: const BorderSide(color: AppColors.surfaceLight),
@@ -400,7 +417,16 @@ class _RoutineCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to routine details / start
+        // Start workout from routine
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ActiveWorkoutScreen(
+              routineId: routine.id,
+              workoutName: routine.name,
+              preloadedExercises: routine.exercises,
+            ),
+          ),
+        );
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

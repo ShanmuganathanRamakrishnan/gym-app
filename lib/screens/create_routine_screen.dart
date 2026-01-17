@@ -22,7 +22,14 @@ const List<String> _muscleGroups = [
 
 /// 3-step routine creation wizard
 class CreateRoutineScreen extends StatefulWidget {
-  const CreateRoutineScreen({super.key});
+  final List<RoutineExercise>? prefillExercises;
+  final String? prefillName;
+
+  const CreateRoutineScreen({
+    super.key,
+    this.prefillExercises,
+    this.prefillName,
+  });
 
   @override
   State<CreateRoutineScreen> createState() => _CreateRoutineScreenState();
@@ -38,6 +45,18 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
 
   // Step 2: Exercises
   final List<RoutineExercise> _exercises = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Prefill if provided (from Save as Routine)
+    if (widget.prefillName != null && widget.prefillName!.isNotEmpty) {
+      _nameController.text = widget.prefillName!;
+    }
+    if (widget.prefillExercises != null) {
+      _exercises.addAll(widget.prefillExercises!);
+    }
+  }
 
   @override
   void dispose() {
