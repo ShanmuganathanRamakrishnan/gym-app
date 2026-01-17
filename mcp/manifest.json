@@ -1,0 +1,244 @@
+{
+    "name": "gym-mcp",
+    "version": "1.0.0",
+    "description": "MCP tools for Gym App development and AI features",
+    "baseUrl": "http://localhost:3845",
+    "auth": {
+        "type": "bearer",
+        "description": "JWT or API key. Production: use mTLS or short-lived tokens."
+    },
+    "rateLimit": {
+        "perMinute": 60,
+        "configEnvVar": "MCP_RATE_LIMIT_PER_MINUTE"
+    },
+    "tools": [
+        {
+            "id": "getDesignSpec",
+            "method": "GET",
+            "path": "/design-spec",
+            "description": "Returns the complete design specification including theme tokens, components, and screens",
+            "inputSchema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+            },
+            "outputSchema": {
+                "type": "object",
+                "properties": {
+                    "theme": {
+                        "type": "object",
+                        "properties": {
+                            "background": {
+                                "type": "string"
+                            },
+                            "surface": {
+                                "type": "string"
+                            },
+                            "accent": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "components": {
+                        "type": "object"
+                    },
+                    "screens": {
+                        "type": "object"
+                    }
+                },
+                "required": [
+                    "theme",
+                    "components",
+                    "screens"
+                ]
+            }
+        },
+        {
+            "id": "listScreens",
+            "method": "GET",
+            "path": "/ui",
+            "description": "Lists all available screen UI examples",
+            "inputSchema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+            },
+            "outputSchema": {
+                "type": "object",
+                "properties": {
+                    "screens": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "screens"
+                ]
+            }
+        },
+        {
+            "id": "getScreenComponents",
+            "method": "POST",
+            "path": "/tools/getScreenComponents",
+            "description": "Returns the component tree and data for a specific screen",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "screen": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "pattern": "^[a-zA-Z0-9_-]+$"
+                    }
+                },
+                "required": [
+                    "screen"
+                ],
+                "additionalProperties": false
+            },
+            "outputSchema": {
+                "type": "object",
+                "properties": {
+                    "screen": {
+                        "type": "string"
+                    },
+                    "layout": {
+                        "type": "object"
+                    }
+                },
+                "required": [
+                    "screen"
+                ]
+            }
+        },
+        {
+            "id": "logWorkout",
+            "method": "POST",
+            "path": "/tools/logWorkout",
+            "description": "Log a workout session for a user",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "userId": {
+                        "type": "string",
+                        "description": "User identifier"
+                    },
+                    "workout": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "exercises": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "sets": {
+                                            "type": "integer"
+                                        },
+                                        "reps": {
+                                            "type": "integer"
+                                        },
+                                        "weight": {
+                                            "type": "number"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ]
+                    }
+                },
+                "required": [
+                    "userId",
+                    "workout"
+                ],
+                "additionalProperties": false
+            },
+            "outputSchema": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "workoutId": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "success"
+                ]
+            }
+        },
+        {
+            "id": "purchaseSticker",
+            "method": "POST",
+            "path": "/tools/purchaseSticker",
+            "description": "Purchase a sticker using coins (requires IAP receipt validation in production)",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "userId": {
+                        "type": "string",
+                        "description": "User identifier"
+                    },
+                    "stickerId": {
+                        "type": "string",
+                        "description": "Sticker to purchase"
+                    },
+                    "receipt": {
+                        "type": "string",
+                        "description": "IAP receipt for validation (redacted in logs)"
+                    }
+                },
+                "required": [
+                    "userId",
+                    "stickerId"
+                ],
+                "additionalProperties": false
+            },
+            "outputSchema": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "stickerId": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "coinsRemaining": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "success"
+                ]
+            }
+        }
+    ],
+    "endpoints": {
+        "health": "GET /health",
+        "designSpec": "GET /design-spec",
+        "listScreens": "GET /ui",
+        "getScreenUI": "GET /ui/:screen",
+        "executeTool": "POST /tools/:toolId"
+    }
+}

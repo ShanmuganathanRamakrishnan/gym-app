@@ -1,9 +1,16 @@
-# Flutter/Dart
+# Build artifacts
+build/
+dist/
+*.js.map
+
+# Dependencies
+node_modules/
 .dart_tool/
+.packages
+
+# Flutter
 .flutter-plugins
 .flutter-plugins-dependencies
-.packages
-build/
 *.iml
 .idea/
 .vscode/
@@ -27,48 +34,51 @@ build/
 **/ios/**/.sconsign.dblite
 **/ios/**/.DS_Store
 **/ios/**/DerivedData/
-**/ios/**/Icon?
 **/ios/**/Pods/
 **/ios/**/.symlinks/
 **/ios/**/Flutter/Flutter.framework
 **/ios/**/Flutter/Flutter.podspec
 **/ios/Flutter/ephemeral/
-**/ios/Flutter/.last_build_id
 
-# macOS
-**/macos/Flutter/GeneratedPluginRegistrant.swift
-**/macos/Flutter/ephemeral/
-
-# Windows
-**/windows/flutter/generated_plugin_registrant.cc
-**/windows/flutter/generated_plugin_registrant.h
-**/windows/flutter/generated_plugins.cmake
-**/windows/flutter/ephemeral/
-
-# Linux
-**/linux/flutter/generated_plugin_registrant.cc
-**/linux/flutter/generated_plugin_registrant.h
-**/linux/flutter/generated_plugins.cmake
-**/linux/flutter/ephemeral/
-
-# Node.js (for MCP server and tools)
-node_modules/
-npm-debug.log
-yarn-error.log
+# Environment & Secrets
 .env
 .env.local
+.env.*.local
+*.env.*
+infra/.env
+*.pem
+*.key
+*.cert
+*.p12
+*.jks
+*.pfx
+
+# Backend logs
+backend/logs/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
 
 # IDE
 *.swp
 *.swo
 *~
-
-# Misc
 .DS_Store
-*.log
-coverage/
-.pub-cache/
-.pub/
-/pubspec.lock
 
-# NOTE: design/design-spec.json is TRACKED (not ignored)
+# Test coverage
+coverage/
+.nyc_output/
+
+# OS
+Thumbs.db
+
+# Lock files (optional - uncomment to ignore)
+# pubspec.lock
+# package-lock.json
+
+# Docker volumes
+postgres-data/
+minio-data/
+redis-data/
