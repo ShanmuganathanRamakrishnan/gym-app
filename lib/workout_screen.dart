@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'models/routine.dart';
 import 'services/routine_store.dart';
-import 'screens/create_routine_screen.dart';
+import 'data/prebuilt_routines.dart';
+import 'screens/explore_routine_detail.dart';
+
+/// Mock user experience level (would come from UserProfile)
+const ExperienceLevel _userExperienceLevel = ExperienceLevel.intermediate;
 
 /// Mock data for Workout tab
 final Map<String, dynamic> workoutData = {
@@ -12,19 +16,6 @@ final Map<String, dynamic> workoutData = {
     "duration": "45 min",
     "exercises": 8,
   },
-  "explore": [
-    {
-      "title": "Push / Pull / Legs",
-      "days": "6 days/week",
-      "icon": Icons.repeat
-    },
-    {"title": "Upper / Lower", "days": "4 days/week", "icon": Icons.swap_vert},
-    {
-      "title": "Full Body",
-      "days": "3 days/week",
-      "icon": Icons.accessibility_new
-    },
-  ],
 };
 
 class WorkoutScreen extends StatefulWidget {
@@ -37,6 +28,9 @@ class WorkoutScreen extends StatefulWidget {
 class _WorkoutScreenState extends State<WorkoutScreen> {
   final RoutineStore _store = RoutineStore();
   bool _loading = true;
+
+  // Explore filter state
+  ExperienceLevel _selectedLevel = _userExperienceLevel;
 
   @override
   void initState() {
@@ -51,12 +45,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     }
   }
 
-  Future<void> _openCreateRoutine() async {
+  Future<void> _openExploreDetail(PrebuiltRoutine routine) async {
     final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const CreateRoutineScreen()),
+      MaterialPageRoute(builder: (_) => ExploreRoutineDetail(routine: routine)),
     );
 
-    // Refresh if a routine was saved
+    // Refresh if a routine was added
     if (result == true && mounted) {
       setState(() {});
     }
@@ -65,7 +59,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     final suggested = workoutData['suggested'] as Map<String, dynamic>;
-    final explore = workoutData['explore'] as List<dynamic>;
 
     if (_loading) {
       return const Scaffold(
@@ -110,7 +103,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               // 3) EXPLORE
               _buildSectionTitle(context, 'Explore'),
               const SizedBox(height: 12),
-              _buildExploreSection(context, explore),
+              _buildExploreFilters(),
+              const SizedBox(height: 16),
+              _buildExploreSection(context),
               const SizedBox(height: 28),
 
               // 4) START EMPTY WORKOUT
@@ -152,7 +147,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Label
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -170,8 +164,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
             ),
             const SizedBox(height: 12),
-
-            // Title
             Text(
               workout['title'] as String,
               style: const TextStyle(
@@ -181,8 +173,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
             ),
             const SizedBox(height: 4),
-
-            // Subtitle
             Text(
               workout['subtitle'] as String,
               style: const TextStyle(
@@ -191,8 +181,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
             ),
             const SizedBox(height: 12),
-
-            // Meta row
             Row(
               children: [
                 _buildMeta(Icons.timer_outlined, workout['duration'] as String),
@@ -202,8 +190,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ],
             ),
             const SizedBox(height: 16),
-
-            // CTA
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -272,10 +258,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       ),
       child: Column(
         children: [
-          // Icon container for visual grouping
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.surfaceLight,
               shape: BoxShape.circle,
             ),
@@ -296,24 +281,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Create a custom routine to get started',
+            'Add a routine from Explore below',
             style: TextStyle(
               color: AppColors.textSecondary.withValues(alpha: 0.85),
               fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 20),
-          OutlinedButton.icon(
-            onPressed: _openCreateRoutine,
-            icon: const Icon(Icons.add, size: 20),
-            label: const Text('Create Routine'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.accent,
-              side: const BorderSide(color: AppColors.accent, width: 1.5),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
           ),
         ],
@@ -322,18 +293,68 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 3) EXPLORE
+  // 3) EXPLORE (with experience filter)
   // ─────────────────────────────────────────────────────────────────────────
-  Widget _buildExploreSection(BuildContext context, List<dynamic> items) {
+  Widget _buildExploreFilters() {
+    return Row(
+      children: ExperienceLevel.values.map((level) {
+        final isSelected = _selectedLevel == level;
+        return Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: GestureDetector(
+            onTap: () => setState(() => _selectedLevel = level),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.accent : AppColors.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? AppColors.accent : AppColors.surfaceLight,
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                level.displayName,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildExploreSection(BuildContext context) {
+    final filteredRoutines = getRoutinesByLevel(_selectedLevel);
+
+    if (filteredRoutines.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const Center(
+          child: Text(
+            'No routines for this level',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+          ),
+        ),
+      );
+    }
+
     return Column(
-      children: items.map((item) {
-        final data = item as Map<String, dynamic>;
+      children: filteredRoutines.map((routine) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: _ExploreCard(
-            title: data['title'] as String,
-            subtitle: data['days'] as String,
-            icon: data['icon'] as IconData,
+            routine: routine,
+            store: _store,
+            onTap: () => _openExploreDetail(routine),
           ),
         );
       }).toList(),
@@ -432,24 +453,22 @@ class _RoutineCard extends StatelessWidget {
   }
 }
 
-/// Explore program card
+/// Explore card for prebuilt routines
 class _ExploreCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
+  final PrebuiltRoutine routine;
+  final RoutineStore store;
+  final VoidCallback onTap;
 
   const _ExploreCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
+    required this.routine,
+    required this.store,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // TODO: View program details
-      },
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
@@ -465,7 +484,8 @@ class _ExploreCard extends StatelessWidget {
                 color: AppColors.surfaceLight,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: AppColors.textSecondary, size: 22),
+              child: const Icon(Icons.auto_awesome,
+                  color: AppColors.textSecondary, size: 22),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -473,29 +493,75 @@ class _ExploreCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    routine.name,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 13,
-                    ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        '${routine.daysPerWeek} days/week',
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _getLevelColor().withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          routine.level.displayName,
+                          style: TextStyle(
+                            color: _getLevelColor(),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
-                color: AppColors.textMuted, size: 22),
+            // Show checkmark if already added, otherwise chevron
+            store.hasTemplate(routine.id)
+                ? Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentDim,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: AppColors.accent,
+                      size: 16,
+                    ),
+                  )
+                : const Icon(Icons.chevron_right,
+                    color: AppColors.textMuted, size: 22),
           ],
         ),
       ),
     );
+  }
+
+  Color _getLevelColor() {
+    switch (routine.level) {
+      case ExperienceLevel.beginner:
+        return const Color(0xFF4CAF50);
+      case ExperienceLevel.intermediate:
+        return const Color(0xFFFFA726);
+      case ExperienceLevel.advanced:
+        return const Color(0xFFEF5350);
+    }
   }
 }
