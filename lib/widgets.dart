@@ -27,7 +27,8 @@ class GymAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: CircleAvatar(
             radius: 18,
             backgroundColor: const Color(0xFF00C2A8),
-            backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
+            backgroundImage:
+                avatarUrl != null ? NetworkImage(avatarUrl!) : null,
             child: avatarUrl == null
                 ? const Icon(Icons.person, color: Colors.white, size: 20)
                 : null,
@@ -204,11 +205,11 @@ class TemplateCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Color(0x0D000000), // black with 5% opacity
               blurRadius: 8,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
             ),
           ],
         ),
@@ -270,7 +271,7 @@ class RecentRow extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF00C2A8).withOpacity(0.1),
+              color: const Color(0x1A00C2A8), // accent with 10% opacity
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(

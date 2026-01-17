@@ -59,29 +59,32 @@ class HomeScreen extends StatelessWidget {
             Text('Alex', style: Theme.of(context).textTheme.headlineMedium),
           ],
         ),
-        CircleAvatar(
+        const CircleAvatar(
           radius: 20,
           backgroundColor: AppColors.surfaceAlt,
-          child: const Icon(Icons.person, color: AppColors.textMuted),
+          child: Icon(Icons.person, color: AppColors.textMuted),
         ),
       ],
     );
   }
 
   Widget _buildQuickStart(BuildContext context) {
-    return Row(
+    return const Row(
       children: [
-        _QuickCard(icon: Icons.fitness_center, label: 'Full Body'),
-        const SizedBox(width: AppSpacing.sm),
-        _QuickCard(icon: Icons.directions_run, label: 'Cardio'),
-        const SizedBox(width: AppSpacing.sm),
-        _QuickCard(icon: Icons.self_improvement, label: 'Stretch'),
-      ].map((e) => Expanded(child: e)).toList(),
+        Expanded(
+            child: _QuickCard(icon: Icons.fitness_center, label: 'Full Body')),
+        SizedBox(width: AppSpacing.sm),
+        Expanded(
+            child: _QuickCard(icon: Icons.directions_run, label: 'Cardio')),
+        SizedBox(width: AppSpacing.sm),
+        Expanded(
+            child: _QuickCard(icon: Icons.self_improvement, label: 'Stretch')),
+      ],
     );
   }
 
   Widget _buildRecentList(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
         _RecentItem(title: 'Leg Day', date: 'Yesterday', duration: '52 min'),
         _RecentItem(

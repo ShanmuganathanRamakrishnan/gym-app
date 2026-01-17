@@ -13,24 +13,26 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
           // Profile header
-          _ProfileHeader(),
+          const _ProfileHeader(),
           const SizedBox(height: AppSpacing.lg),
 
           // Stats
           Text('Progress', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.sm),
-          _StatsRow(),
+          const _StatsRow(),
           const SizedBox(height: AppSpacing.lg),
 
           // Settings
           Text('Settings', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.sm),
-          _SettingsItem(icon: Icons.person_outline, title: 'Account'),
-          _SettingsItem(
+          const _SettingsItem(icon: Icons.person_outline, title: 'Account'),
+          const _SettingsItem(
               icon: Icons.notifications_outlined, title: 'Notifications'),
-          _SettingsItem(icon: Icons.palette_outlined, title: 'Appearance'),
-          _SettingsItem(icon: Icons.help_outline, title: 'Help & Support'),
-          _SettingsItem(
+          const _SettingsItem(
+              icon: Icons.palette_outlined, title: 'Appearance'),
+          const _SettingsItem(
+              icon: Icons.help_outline, title: 'Help & Support'),
+          const _SettingsItem(
               icon: Icons.logout, title: 'Sign Out', isDestructive: true),
         ],
       ),
@@ -39,6 +41,8 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -49,10 +53,10 @@ class _ProfileHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
+          const CircleAvatar(
             radius: 32,
             backgroundColor: AppColors.accentDim,
-            child: const Icon(Icons.person, color: AppColors.accent, size: 32),
+            child: Icon(Icons.person, color: AppColors.accent, size: 32),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -76,16 +80,18 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 class _StatsRow extends StatelessWidget {
+  const _StatsRow();
+
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return const Row(
       children: [
-        _StatCard(value: '24', label: 'Workouts'),
-        const SizedBox(width: AppSpacing.sm),
-        _StatCard(value: '12h', label: 'Total Time'),
-        const SizedBox(width: AppSpacing.sm),
-        _StatCard(value: '5', label: 'Streak'),
-      ].map((e) => Expanded(child: e)).toList(),
+        Expanded(child: _StatCard(value: '24', label: 'Workouts')),
+        SizedBox(width: AppSpacing.sm),
+        Expanded(child: _StatCard(value: '12h', label: 'Total Time')),
+        SizedBox(width: AppSpacing.sm),
+        Expanded(child: _StatCard(value: '5', label: 'Streak')),
+      ],
     );
   }
 }

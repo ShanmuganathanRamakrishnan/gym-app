@@ -25,7 +25,7 @@ class GymApp extends StatelessWidget {
           foregroundColor: Color(0xFF0A0A0A),
           elevation: 0,
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
