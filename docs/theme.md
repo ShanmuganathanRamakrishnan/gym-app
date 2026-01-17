@@ -1,48 +1,47 @@
 # Theme
 
-Design tokens for the Gym App.
+Dark-mode-first design tokens.
 
 ## Colors
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| bg | #F7F7F7 | Page background |
-| surface | #FFFFFF | Card backgrounds |
-| text | #0A0A0A | Primary text |
-| muted | #6B6B6B | Secondary/muted text |
-| accent | #00C2A8 | Primary accent (teal) |
-
-## Typography
-
-| Style | Size | Weight | Color |
-|-------|------|--------|-------|
-| Headline | 24px | Bold | text |
-| Title | 16px | SemiBold | text |
-| Body | 14px | Regular | muted |
-| Label | 12px | Medium | varies |
+| Token | Hex | Usage |
+|-------|-----|-------|
+| background | #0E0E0E | Page background |
+| surface | #1A1A1A | Cards |
+| surfaceAlt | #222222 | Elevated surfaces |
+| divider | #2A2A2A | Borders |
+| textPrimary | #FFFFFF | Headings |
+| textSecondary | #B3B3B3 | Body text |
+| textMuted | #6B6B6B | Disabled |
+| accent | #FC4C02 | CTA, highlights |
 
 ## Spacing
 
-- Base unit: 4px
-- Component padding: 16px (4 units)
-- Section gap: 24px (6 units)
-- Card border radius: 16px
+| Size | Value |
+|------|-------|
+| xs | 4px |
+| sm | 8px |
+| md | 16px |
+| lg | 24px |
+| xl | 32px |
 
-## Shadows
+## Typography
 
-- Card shadow: `0 2px 8px rgba(0,0,0,0.05)`
+| Style | Size | Weight |
+|-------|------|--------|
+| Headline Large | 28px | Bold |
+| Headline Medium | 22px | Bold |
+| Title Large | 18px | SemiBold |
+| Title Medium | 16px | SemiBold |
+| Body Large | 16px | Regular |
+| Body Medium | 14px | Regular |
+| Body Small | 12px | Regular |
 
-## Status Colors
+## Border Radius
 
-| Status | Color |
-|--------|-------|
-| Default/Active | #00C2A8 (accent) |
-| In Progress | #FFA726 (orange) |
-| Completed | #4CAF50 (green) |
-| Error | #F44336 (red) |
-
-## Usage Notes
-
-- Use accent color sparingly for CTAs and highlights
-- Maintain sufficient contrast for accessibility
-- All interactive elements should have visible focus states
+| Size | Value |
+|------|-------|
+| sm | 8px |
+| md | 12px |
+| lg | 16px |
+| xl | 24px |

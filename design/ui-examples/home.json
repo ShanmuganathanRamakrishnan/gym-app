@@ -4,86 +4,76 @@
         "type": "Scaffold",
         "children": [
             {
-                "type": "AppBar",
+                "type": "Header",
                 "props": {
-                    "title": "Good Morning, Alex!",
-                    "avatarUrl": null
+                    "greeting": "Good Evening",
+                    "name": "Alex"
                 }
             },
             {
-                "type": "ScrollView",
+                "type": "WorkoutCard",
+                "props": {
+                    "title": "Upper Body Strength",
+                    "subtitle": "Chest · Shoulders · Triceps",
+                    "duration": "45 min",
+                    "exercises": 8,
+                    "progress": 0.0
+                }
+            },
+            {
+                "type": "Section",
+                "title": "Quick Start",
                 "children": [
                     {
-                        "type": "WorkoutCard",
+                        "type": "QuickCard",
                         "props": {
-                            "title": "Upper Body Strength",
-                            "subtitle": "Chest, Shoulders, Triceps",
-                            "progress": 0.0,
-                            "ctaLabel": "Start Workout",
-                            "variant": "notStarted"
+                            "icon": "fitness_center",
+                            "label": "Full Body"
                         }
                     },
                     {
-                        "type": "Section",
-                        "title": "Quick Start",
-                        "children": [
-                            {
-                                "type": "HorizontalList",
-                                "items": [
-                                    {
-                                        "type": "TemplateCard",
-                                        "props": {
-                                            "title": "Full Body",
-                                            "icon": "fitness_center"
-                                        }
-                                    },
-                                    {
-                                        "type": "TemplateCard",
-                                        "props": {
-                                            "title": "Cardio",
-                                            "icon": "directions_run"
-                                        }
-                                    },
-                                    {
-                                        "type": "TemplateCard",
-                                        "props": {
-                                            "title": "Yoga",
-                                            "icon": "self_improvement"
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
+                        "type": "QuickCard",
+                        "props": {
+                            "icon": "directions_run",
+                            "label": "Cardio"
+                        }
                     },
                     {
-                        "type": "Section",
-                        "title": "Recent Workouts",
-                        "children": [
-                            {
-                                "type": "RecentRow",
-                                "props": {
-                                    "title": "Leg Day",
-                                    "date": "Yesterday",
-                                    "detail": "45 min"
-                                }
-                            },
-                            {
-                                "type": "RecentRow",
-                                "props": {
-                                    "title": "HIIT Session",
-                                    "date": "2 days ago",
-                                    "detail": "30 min"
-                                }
-                            },
-                            {
-                                "type": "RecentRow",
-                                "props": {
-                                    "title": "Core Workout",
-                                    "date": "3 days ago",
-                                    "detail": "20 min"
-                                }
-                            }
-                        ]
+                        "type": "QuickCard",
+                        "props": {
+                            "icon": "self_improvement",
+                            "label": "Stretch"
+                        }
+                    }
+                ]
+            },
+            {
+                "type": "Section",
+                "title": "Recent",
+                "children": [
+                    {
+                        "type": "RecentItem",
+                        "props": {
+                            "title": "Leg Day",
+                            "date": "Yesterday",
+                            "duration": "52 min"
+                        }
+                    },
+                    {
+                        "type": "RecentItem",
+                        "props": {
+                            "title": "HIIT Session",
+                            "date": "2 days ago",
+                            "duration": "30 min"
+                        }
+                    },
+                    {
+                        "type": "RecentItem",
+                        "props": {
+                            "title": "Core & Abs",
+                            "date": "3 days ago",
+                            "duration": "25 min"
+                        }
                     }
                 ]
             },
