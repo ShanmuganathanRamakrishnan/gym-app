@@ -264,48 +264,56 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   Widget _buildEmptyRoutines(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.surfaceLight, width: 1),
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.folder_open_outlined,
-            color: AppColors.textMuted,
-            size: 40,
+          // Icon container for visual grouping
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLight,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.folder_open_outlined,
+              color: AppColors.textSecondary,
+              size: 32,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
           const Text(
             'No routines yet',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
-          const Text(
+          const SizedBox(height: 6),
+          Text(
             'Create a custom routine to get started',
             style: TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 13,
+              color: AppColors.textSecondary.withValues(alpha: 0.85),
+              fontSize: 14,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           OutlinedButton.icon(
             onPressed: _openCreateRoutine,
-            icon: const Icon(Icons.add, size: 18),
+            icon: const Icon(Icons.add, size: 20),
             label: const Text('Create Routine'),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.accent,
-              side: const BorderSide(color: AppColors.accent),
+              side: const BorderSide(color: AppColors.accent, width: 1.5),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
           ),
         ],
@@ -404,11 +412,11 @@ class _RoutineCard extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
-                    '${routine.durationMinutes} min · ${routine.exercises.length} exercises',
+                    '${routine.exercises.length} exercise${routine.exercises.length != 1 ? 's' : ''}',
                     style: const TextStyle(
-                      color: AppColors.textMuted,
+                      color: AppColors.textSecondary,
                       fontSize: 13,
                     ),
                   ),

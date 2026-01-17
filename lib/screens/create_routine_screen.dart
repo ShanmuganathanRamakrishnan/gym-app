@@ -4,6 +4,22 @@ import '../models/routine.dart';
 import '../services/routine_store.dart';
 import 'add_exercise_modal.dart';
 
+/// Granular muscle group options (Fix #4)
+const List<String> _muscleGroups = [
+  'Chest',
+  'Back',
+  'Shoulders',
+  'Biceps',
+  'Triceps',
+  'Forearms',
+  'Quads',
+  'Hamstrings',
+  'Glutes',
+  'Calves',
+  'Core',
+  'Full Body',
+];
+
 /// 3-step routine creation wizard
 class CreateRoutineScreen extends StatefulWidget {
   const CreateRoutineScreen({super.key});
@@ -16,26 +32,12 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
   final PageController _pageController = PageController();
   int _currentStep = 0;
 
-  // Step 1: Basics
+  // Step 1: Basics (NO duration - Fix #2)
   final TextEditingController _nameController = TextEditingController();
   final Set<String> _selectedFocus = {};
-  int _durationMinutes = 45;
 
   // Step 2: Exercises
   final List<RoutineExercise> _exercises = [];
-
-  // Focus options
-  static const List<String> _focusOptions = [
-    'Chest',
-    'Back',
-    'Shoulders',
-    'Arms',
-    'Legs',
-    'Core',
-    'Full Body',
-  ];
-
-  static const List<int> _durationOptions = [30, 45, 60, 90];
 
   @override
   void dispose() {
@@ -82,7 +84,6 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameController.text.trim(),
       targetFocus: _selectedFocus.toList(),
-      durationMinutes: _durationMinutes,
       exercises: _exercises,
     );
 
@@ -108,7 +109,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
         ),
         content: const Text(
           "You've reached the free routine limit (3 routines). Upgrade to create unlimited routines.",
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
         ),
         actions: [
           TextButton(
@@ -170,7 +171,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
               child: Text(
                 'Step ${_currentStep + 1} of 3',
                 style: const TextStyle(
-                  color: AppColors.textMuted,
+                  color: AppColors.textSecondary,
                   fontSize: 14,
                 ),
               ),
@@ -204,7 +205,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 1: BASICS
+  // STEP 1: BASICS (NO DURATION - Fix #2)
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildStep1Basics() {
     return SingleChildScrollView(
@@ -218,13 +219,13 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           TextField(
             controller: _nameController,
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
             decoration: InputDecoration(
               hintText: 'e.g., Monday Push Day',
               hintStyle: const TextStyle(color: AppColors.textMuted),
@@ -236,99 +237,76 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
-                vertical: 14,
+                vertical: 16,
               ),
             ),
             onChanged: (_) => setState(() {}),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 32),
 
-          // Target Focus
+          // Target Focus - Expanded muscle groups (Fix #4)
           const Text(
-            'Target Focus',
+            'Target Muscles',
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
-          const Text(
+          const SizedBox(height: 6),
+          Text(
             'Select muscle groups this routine targets',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.8),
+              fontSize: 14,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _focusOptions.map((focus) {
-              final isSelected = _selectedFocus.contains(focus);
-              return FilterChip(
-                label: Text(focus),
-                selected: isSelected,
-                onSelected: (selected) {
+            spacing: 10,
+            runSpacing: 10,
+            children: _muscleGroups.map((muscle) {
+              final isSelected = _selectedFocus.contains(muscle);
+              return GestureDetector(
+                onTap: () {
                   setState(() {
-                    if (selected) {
-                      _selectedFocus.add(focus);
+                    if (isSelected) {
+                      _selectedFocus.remove(muscle);
                     } else {
-                      _selectedFocus.remove(focus);
+                      _selectedFocus.add(muscle);
                     }
                   });
                 },
-                backgroundColor: AppColors.surface,
-                selectedColor: AppColors.accentDim,
-                checkmarkColor: AppColors.accent,
-                labelStyle: TextStyle(
-                  color:
-                      isSelected ? AppColors.accent : AppColors.textSecondary,
-                ),
-                side: BorderSide(
-                  color: isSelected ? AppColors.accent : AppColors.surfaceLight,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.accentDim : AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.accent
+                          : AppColors.surfaceLight,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Text(
+                    muscle,
+                    style: TextStyle(
+                      color:
+                          isSelected ? AppColors.accent : AppColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
                 ),
               );
             }).toList(),
           ),
-          const SizedBox(height: 28),
-
-          // Duration
-          const Text(
-            'Estimated Duration',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<int>(
-                value: _durationMinutes,
-                isExpanded: true,
-                dropdownColor: AppColors.surface,
-                style: const TextStyle(color: AppColors.textPrimary),
-                icon: const Icon(Icons.expand_more, color: AppColors.textMuted),
-                items: _durationOptions.map((mins) {
-                  return DropdownMenuItem(
-                    value: mins,
-                    child: Text('$mins minutes'),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) setState(() => _durationMinutes = value);
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 48),
 
           // Continue Button
           SizedBox(
@@ -365,15 +343,16 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
         // Header with routine name
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           color: AppColors.surface,
           child: Text(
             _nameController.text.trim().isEmpty
                 ? 'New Routine'
                 : _nameController.text.trim(),
             style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
@@ -388,6 +367,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                   itemBuilder: (context, index) {
                     return _ExerciseListItem(
                       exercise: _exercises[index],
+                      index: index,
                       onRemove: () => _removeExercise(index),
                       onUpdate: (updated) => _updateExercise(index, updated),
                     );
@@ -398,6 +378,12 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
         // Bottom actions
         Container(
           padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: AppColors.background,
+            border: Border(
+              top: BorderSide(color: AppColors.surfaceLight, width: 1),
+            ),
+          ),
           child: Column(
             children: [
               // Add Exercise
@@ -409,7 +395,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                   label: const Text('Add Exercise'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.accent,
-                    side: const BorderSide(color: AppColors.accent),
+                    side: const BorderSide(color: AppColors.accent, width: 1.5),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -449,35 +435,48 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
 
   Widget _buildEmptyExercises() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.fitness_center_outlined,
-            color: AppColors.textMuted,
-            size: 48,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'No exercises added yet',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.fitness_center_outlined,
+                color: AppColors.textMuted,
+                size: 40,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Tap "Add Exercise" to get started',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 14),
-          ),
-        ],
+            const SizedBox(height: 20),
+            const Text(
+              'No exercises added yet',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Tap "Add Exercise" to build your routine',
+              style: TextStyle(
+                color: AppColors.textSecondary.withValues(alpha: 0.8),
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 3: REVIEW
+  // STEP 3: REVIEW (NO DURATION)
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildStep3Review() {
     return SingleChildScrollView(
@@ -504,110 +503,112 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
                 // Focus chips
                 if (_selectedFocus.isNotEmpty) ...[
                   Wrap(
-                    spacing: 6,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: _selectedFocus.map((f) {
-                      return Chip(
-                        label: Text(f),
-                        labelStyle: const TextStyle(
-                          color: AppColors.accent,
-                          fontSize: 12,
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
                         ),
-                        backgroundColor: AppColors.accentDim,
-                        side: BorderSide.none,
-                        padding: EdgeInsets.zero,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        decoration: BoxDecoration(
+                          color: AppColors.accentDim,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          f,
+                          style: const TextStyle(
+                            color: AppColors.accent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                 ],
 
-                // Meta row
+                // Exercise count only (no duration)
                 Row(
                   children: [
-                    const Icon(Icons.timer_outlined,
-                        size: 16, color: AppColors.textMuted),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$_durationMinutes min',
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 14),
-                    ),
-                    const SizedBox(width: 16),
                     const Icon(Icons.format_list_numbered,
-                        size: 16, color: AppColors.textMuted),
-                    const SizedBox(width: 4),
+                        size: 18, color: AppColors.textSecondary),
+                    const SizedBox(width: 6),
                     Text(
-                      '${_exercises.length} exercises',
+                      '${_exercises.length} exercise${_exercises.length != 1 ? 's' : ''}',
                       style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 14),
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
 
           // Exercise list
           const Text(
             'Exercises',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 16,
+              fontSize: 17,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           ...List.generate(_exercises.length, (index) {
             final ex = _exercises[index];
             return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 28,
-                    height: 28,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: AppColors.surfaceLight,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
                       child: Text(
                         '${index + 1}',
                         style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Text(
                       ex.name,
                       style: const TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 14,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                   Text(
                     '${ex.sets}×${ex.reps}',
                     style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
                     ),
                   ),
                 ],
@@ -642,16 +643,18 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// EXERCISE LIST ITEM
+// EXERCISE LIST ITEM (improved visual clarity - Fix #5)
 // ═══════════════════════════════════════════════════════════════════════════
 
 class _ExerciseListItem extends StatelessWidget {
   final RoutineExercise exercise;
+  final int index;
   final VoidCallback onRemove;
   final ValueChanged<RoutineExercise> onUpdate;
 
   const _ExerciseListItem({
     required this.exercise,
+    required this.index,
     required this.onRemove,
     required this.onUpdate,
   });
@@ -659,11 +662,11 @@ class _ExerciseListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -671,13 +674,32 @@ class _ExerciseListItem extends StatelessWidget {
           // Header row
           Row(
             children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppColors.accentDim,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Center(
+                  child: Text(
+                    '${index + 1}',
+                    style: const TextStyle(
+                      color: AppColors.accent,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   exercise.name,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -690,25 +712,16 @@ class _ExerciseListItem extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          // Editable fields
+          // Editable fields with better contrast
           Row(
             children: [
-              _buildField('Sets', exercise.sets.toString(), (value) {
-                final sets = int.tryParse(value) ?? exercise.sets;
-                onUpdate(exercise.copyWith(sets: sets));
-              }),
+              _buildField('Sets', exercise.sets.toString()),
               const SizedBox(width: 12),
-              _buildField('Reps', exercise.reps, (value) {
-                onUpdate(exercise.copyWith(reps: value));
-              }),
+              _buildField('Reps', exercise.reps),
               const SizedBox(width: 12),
-              _buildField('Rest', '${exercise.restSeconds}s', (value) {
-                final rest = int.tryParse(value.replaceAll('s', '')) ??
-                    exercise.restSeconds;
-                onUpdate(exercise.copyWith(restSeconds: rest));
-              }),
+              _buildField('Rest', '${exercise.restSeconds}s'),
             ],
           ),
         ],
@@ -716,19 +729,23 @@ class _ExerciseListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildField(
-      String label, String value, ValueChanged<String> onChanged) {
+  Widget _buildField(String label, String value) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: AppColors.surfaceLight,
               borderRadius: BorderRadius.circular(8),
@@ -737,7 +754,8 @@ class _ExerciseListItem extends StatelessWidget {
               value,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 14,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
