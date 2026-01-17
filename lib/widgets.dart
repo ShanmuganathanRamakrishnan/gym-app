@@ -26,8 +26,9 @@ class GymAppBar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.only(right: 16),
           child: CircleAvatar(
             radius: 18,
-            backgroundColor: const Color(0xFF00C2A8),
-            backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
+            backgroundColor: const Color(0xFFFC4C02),
+            backgroundImage:
+                avatarUrl != null ? NetworkImage(avatarUrl!) : null,
             child: avatarUrl == null
                 ? const Icon(Icons.person, color: Colors.white, size: 20)
                 : null,
@@ -65,7 +66,7 @@ class WorkoutCard extends StatelessWidget {
   Color get _accentColor {
     switch (variant) {
       case WorkoutCardVariant.notStarted:
-        return const Color(0xFF00C2A8);
+        return const Color(0xFFFC4C02);
       case WorkoutCardVariant.inProgress:
         return const Color(0xFFFFA726);
       case WorkoutCardVariant.completed:
@@ -218,7 +219,7 @@ class TemplateCard extends StatelessWidget {
           children: [
             Icon(
               _icon,
-              color: const Color(0xFF00C2A8),
+              color: const Color(0xFFFC4C02),
               size: 32,
             ),
             const SizedBox(height: 8),
@@ -270,12 +271,12 @@ class RecentRow extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF00C2A8).withOpacity(0.1),
+              color: const Color(0xFFFC4C02).withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.fitness_center,
-              color: Color(0xFF00C2A8),
+              color: Color(0xFFFC4C02),
               size: 20,
             ),
           ),
@@ -340,9 +341,9 @@ class GymBottomNav extends StatelessWidget {
       currentIndex: selectedIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white,
-      selectedItemColor: const Color(0xFF00C2A8),
-      unselectedItemColor: const Color(0xFF6B6B6B),
+      backgroundColor: const Color(0xFF1A1A1A), // Dark surface
+      selectedItemColor: const Color(0xFFFC4C02), // Strava orange
+      unselectedItemColor: const Color(0xFFB3B3B3), // textSecondary
       showUnselectedLabels: true,
       items: const [
         BottomNavigationBarItem(
@@ -356,9 +357,9 @@ class GymBottomNav extends StatelessWidget {
           label: 'Workouts',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.bar_chart_outlined),
-          activeIcon: Icon(Icons.bar_chart),
-          label: 'Progress',
+          icon: Icon(Icons.auto_awesome_outlined),
+          activeIcon: Icon(Icons.auto_awesome),
+          label: 'AI',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
