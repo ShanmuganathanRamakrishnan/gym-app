@@ -59,15 +59,23 @@ class Routine {
   final List<RoutineExercise> exercises;
   final DateTime createdAt;
 
+  /// Template ID for prebuilt routines (null for custom routines)
+  /// Used to prevent duplicate adding of the same prebuilt routine
+  final String? templateId;
+
   Routine({
     required this.id,
     required this.name,
     required this.targetFocus,
     required this.exercises,
     DateTime? createdAt,
+    this.templateId,
   }) : createdAt = createdAt ?? DateTime.now();
 
   int get exerciseCount => exercises.length;
+
+  /// Check if this routine is from a prebuilt template
+  bool get isFromTemplate => templateId != null;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -75,6 +83,7 @@ class Routine {
         'targetFocus': targetFocus,
         'exercises': exercises.map((e) => e.toJson()).toList(),
         'createdAt': createdAt.toIso8601String(),
+        if (templateId != null) 'templateId': templateId,
       };
 
   factory Routine.fromJson(Map<String, dynamic> json) {
@@ -86,6 +95,7 @@ class Routine {
           .map((e) => RoutineExercise.fromJson(e as Map<String, dynamic>))
           .toList(),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      templateId: json['templateId'] as String?,
     );
   }
 

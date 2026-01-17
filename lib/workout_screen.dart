@@ -353,6 +353,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           padding: const EdgeInsets.only(bottom: 10),
           child: _ExploreCard(
             routine: routine,
+            store: _store,
             onTap: () => _openExploreDetail(routine),
           ),
         );
@@ -455,9 +456,14 @@ class _RoutineCard extends StatelessWidget {
 /// Explore card for prebuilt routines
 class _ExploreCard extends StatelessWidget {
   final PrebuiltRoutine routine;
+  final RoutineStore store;
   final VoidCallback onTap;
 
-  const _ExploreCard({required this.routine, required this.onTap});
+  const _ExploreCard({
+    required this.routine,
+    required this.store,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -526,8 +532,22 @@ class _ExploreCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
-                color: AppColors.textMuted, size: 22),
+            // Show checkmark if already added, otherwise chevron
+            store.hasTemplate(routine.id)
+                ? Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentDim,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: AppColors.accent,
+                      size: 16,
+                    ),
+                  )
+                : const Icon(Icons.chevron_right,
+                    color: AppColors.textMuted, size: 22),
           ],
         ),
       ),

@@ -47,6 +47,7 @@ class PrebuiltRoutine {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: name,
       targetFocus: focusAreas,
+      templateId: id, // Preserve template ID to prevent duplicates
       exercises: exercises
           .map((e) => RoutineExercise(
                 exerciseId: e.exerciseId,

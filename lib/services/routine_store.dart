@@ -45,8 +45,20 @@ class RoutineStore {
     }
   }
 
+  /// Check if a prebuilt routine template has already been added
+  bool hasTemplate(String templateId) {
+    return _routines.any((r) => r.templateId == templateId);
+  }
+
+  /// Save a routine (enforces limit and duplicate template check)
   Future<bool> saveRoutine(Routine routine) async {
     if (!canAddRoutine) return false;
+
+    // Prevent duplicate prebuilt routines
+    if (routine.templateId != null && hasTemplate(routine.templateId!)) {
+      return false;
+    }
+
     _routines.add(routine);
     await _saveToStorage();
     return true;
