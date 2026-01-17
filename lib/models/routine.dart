@@ -52,11 +52,11 @@ class RoutineExercise {
 }
 
 /// Model representing a workout routine
+/// Note: Duration is NOT stored - it will be derived from actual workout sessions
 class Routine {
   final String id;
   final String name;
   final List<String> targetFocus;
-  final int durationMinutes;
   final List<RoutineExercise> exercises;
   final DateTime createdAt;
 
@@ -64,16 +64,17 @@ class Routine {
     required this.id,
     required this.name,
     required this.targetFocus,
-    required this.durationMinutes,
     required this.exercises,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
+
+  /// Estimated exercise count for display
+  int get exerciseCount => exercises.length;
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'targetFocus': targetFocus,
-        'durationMinutes': durationMinutes,
         'exercises': exercises.map((e) => e.toJson()).toList(),
         'createdAt': createdAt.toIso8601String(),
       };
@@ -83,7 +84,6 @@ class Routine {
       id: json['id'] as String,
       name: json['name'] as String,
       targetFocus: (json['targetFocus'] as List).cast<String>(),
-      durationMinutes: json['durationMinutes'] as int,
       exercises: (json['exercises'] as List)
           .map((e) => RoutineExercise.fromJson(e as Map<String, dynamic>))
           .toList(),

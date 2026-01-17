@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/routine.dart';
 
-/// Sample exercise data
+/// Sample exercise data with granular muscle groups
 const List<Map<String, String>> _sampleExercises = [
+  // Chest
   {'id': 'bench_press', 'name': 'Bench Press', 'muscle': 'Chest'},
   {
     'id': 'incline_db_press',
@@ -12,28 +13,59 @@ const List<Map<String, String>> _sampleExercises = [
   },
   {'id': 'cable_fly', 'name': 'Cable Fly', 'muscle': 'Chest'},
   {'id': 'push_ups', 'name': 'Push Ups', 'muscle': 'Chest'},
-  {'id': 'shoulder_press', 'name': 'Shoulder Press', 'muscle': 'Shoulders'},
-  {'id': 'lateral_raise', 'name': 'Lateral Raise', 'muscle': 'Shoulders'},
-  {'id': 'face_pull', 'name': 'Face Pull', 'muscle': 'Shoulders'},
-  {'id': 'tricep_dips', 'name': 'Tricep Dips', 'muscle': 'Arms'},
-  {'id': 'tricep_pushdown', 'name': 'Tricep Pushdown', 'muscle': 'Arms'},
-  {'id': 'bicep_curl', 'name': 'Bicep Curl', 'muscle': 'Arms'},
-  {'id': 'hammer_curl', 'name': 'Hammer Curl', 'muscle': 'Arms'},
+  // Back
   {'id': 'deadlift', 'name': 'Deadlift', 'muscle': 'Back'},
   {'id': 'pull_ups', 'name': 'Pull Ups', 'muscle': 'Back'},
   {'id': 'barbell_row', 'name': 'Barbell Row', 'muscle': 'Back'},
   {'id': 'lat_pulldown', 'name': 'Lat Pulldown', 'muscle': 'Back'},
-  {'id': 'squat', 'name': 'Squat', 'muscle': 'Legs'},
-  {'id': 'leg_press', 'name': 'Leg Press', 'muscle': 'Legs'},
-  {'id': 'lunges', 'name': 'Lunges', 'muscle': 'Legs'},
-  {'id': 'leg_curl', 'name': 'Leg Curl', 'muscle': 'Legs'},
-  {'id': 'calf_raise', 'name': 'Calf Raise', 'muscle': 'Legs'},
+  {'id': 'cable_row', 'name': 'Seated Cable Row', 'muscle': 'Back'},
+  // Shoulders
+  {'id': 'shoulder_press', 'name': 'Shoulder Press', 'muscle': 'Shoulders'},
+  {'id': 'lateral_raise', 'name': 'Lateral Raise', 'muscle': 'Shoulders'},
+  {'id': 'face_pull', 'name': 'Face Pull', 'muscle': 'Shoulders'},
+  {'id': 'front_raise', 'name': 'Front Raise', 'muscle': 'Shoulders'},
+  // Biceps
+  {'id': 'bicep_curl', 'name': 'Bicep Curl', 'muscle': 'Biceps'},
+  {'id': 'hammer_curl', 'name': 'Hammer Curl', 'muscle': 'Biceps'},
+  {'id': 'preacher_curl', 'name': 'Preacher Curl', 'muscle': 'Biceps'},
+  // Triceps
+  {'id': 'tricep_dips', 'name': 'Tricep Dips', 'muscle': 'Triceps'},
+  {'id': 'tricep_pushdown', 'name': 'Tricep Pushdown', 'muscle': 'Triceps'},
+  {
+    'id': 'overhead_extension',
+    'name': 'Overhead Extension',
+    'muscle': 'Triceps'
+  },
+  {'id': 'skull_crushers', 'name': 'Skull Crushers', 'muscle': 'Triceps'},
+  // Forearms
+  {'id': 'wrist_curl', 'name': 'Wrist Curl', 'muscle': 'Forearms'},
+  {'id': 'reverse_curl', 'name': 'Reverse Curl', 'muscle': 'Forearms'},
+  // Quads
+  {'id': 'squat', 'name': 'Squat', 'muscle': 'Quads'},
+  {'id': 'leg_press', 'name': 'Leg Press', 'muscle': 'Quads'},
+  {'id': 'lunges', 'name': 'Lunges', 'muscle': 'Quads'},
+  {'id': 'leg_extension', 'name': 'Leg Extension', 'muscle': 'Quads'},
+  // Hamstrings
+  {
+    'id': 'romanian_deadlift',
+    'name': 'Romanian Deadlift',
+    'muscle': 'Hamstrings'
+  },
+  {'id': 'leg_curl', 'name': 'Leg Curl', 'muscle': 'Hamstrings'},
+  // Glutes
+  {'id': 'hip_thrust', 'name': 'Hip Thrust', 'muscle': 'Glutes'},
+  {'id': 'glute_bridge', 'name': 'Glute Bridge', 'muscle': 'Glutes'},
+  // Calves
+  {'id': 'calf_raise', 'name': 'Calf Raise', 'muscle': 'Calves'},
+  {'id': 'seated_calf_raise', 'name': 'Seated Calf Raise', 'muscle': 'Calves'},
+  // Core
   {'id': 'plank', 'name': 'Plank', 'muscle': 'Core'},
   {'id': 'crunches', 'name': 'Crunches', 'muscle': 'Core'},
   {'id': 'russian_twist', 'name': 'Russian Twist', 'muscle': 'Core'},
+  {'id': 'hanging_leg_raise', 'name': 'Hanging Leg Raise', 'muscle': 'Core'},
 ];
 
-/// Modal bottom sheet for selecting exercises
+/// Modal bottom sheet for selecting exercises (Fix #5 - improved visual clarity)
 class AddExerciseModal extends StatefulWidget {
   const AddExerciseModal({super.key});
 
@@ -72,9 +104,9 @@ class _AddExerciseModalState extends State<AddExerciseModal> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.75,
+      initialChildSize: 0.8,
       minChildSize: 0.5,
-      maxChildSize: 0.9,
+      maxChildSize: 0.95,
       builder: (context, scrollController) {
         return Container(
           decoration: const BoxDecoration(
@@ -96,28 +128,33 @@ class _AddExerciseModalState extends State<AddExerciseModal> {
 
               // Header
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Text(
                   'Add Exercise',
                   style: TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 20,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
 
-              // Search
+              // Search (Fix #6 - better contrast)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: TextField(
                   controller: _searchController,
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Search exercises...',
-                    hintStyle: const TextStyle(color: AppColors.textMuted),
-                    prefixIcon:
-                        const Icon(Icons.search, color: AppColors.textMuted),
+                    hintStyle: TextStyle(
+                      color: AppColors.textSecondary.withValues(alpha: 0.7),
+                    ),
+                    prefixIcon: const Icon(Icons.search,
+                        color: AppColors.textSecondary),
                     filled: true,
                     fillColor: AppColors.surface,
                     border: OutlineInputBorder(
@@ -126,15 +163,15 @@ class _AddExerciseModalState extends State<AddExerciseModal> {
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 12,
+                      vertical: 14,
                     ),
                   ),
                   onChanged: (value) => setState(() => _searchQuery = value),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
-              // Exercise list
+              // Exercise list (Fix #5 - improved spacing and contrast)
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
@@ -158,6 +195,7 @@ class _AddExerciseModalState extends State<AddExerciseModal> {
   }
 }
 
+/// Exercise item with improved visual clarity (Fix #5, #6)
 class _ExerciseItem extends StatelessWidget {
   final String name;
   final String muscle;
@@ -174,28 +212,30 @@ class _ExerciseItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           children: [
+            // Icon container
             Container(
-              width: 40,
-              height: 40,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: AppColors.surfaceLight,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
                 Icons.fitness_center,
-                color: AppColors.textMuted,
-                size: 20,
+                color: AppColors.textSecondary,
+                size: 22,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 16),
+            // Text content with improved contrast
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,22 +244,35 @@ class _ExerciseItem extends StatelessWidget {
                     name,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
                     muscle,
                     style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.add, color: AppColors.accent, size: 22),
+            // Add button - more visible (Fix #5)
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.accentDim,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.add,
+                color: AppColors.accent,
+                size: 22,
+              ),
+            ),
           ],
         ),
       ),
