@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/workout_session.dart';
 import '../models/routine.dart';
+import '../services/routine_store.dart';
 import 'create_routine_screen.dart';
 
 /// Workout completion summary screen
@@ -52,6 +53,8 @@ class WorkoutSummaryScreen extends StatelessWidget {
     );
 
     if (result == true && context.mounted) {
+      // Ensure RoutineStore is refreshed
+      await RoutineStore().refresh();
       // Pop back to workout tab
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
@@ -78,7 +81,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                     // Success icon
                     Container(
                       padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.accentDim,
                         shape: BoxShape.circle,
                       ),

@@ -52,6 +52,11 @@ class RoutineStore {
 
   /// Save a routine (enforces limit and duplicate template check)
   Future<bool> saveRoutine(Routine routine) async {
+    // Ensure initialized before saving
+    if (!_initialized) {
+      await init();
+    }
+
     if (!canAddRoutine) return false;
 
     // Prevent duplicate prebuilt routines

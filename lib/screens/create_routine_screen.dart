@@ -93,6 +93,9 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
   Future<void> _saveRoutine() async {
     final store = RoutineStore();
 
+    // Ensure store is initialized
+    await store.init();
+
     // Check limit
     if (!store.canAddRoutine) {
       _showLimitModal();
@@ -109,7 +112,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
     final success = await store.saveRoutine(routine);
 
     if (success && mounted) {
-      // Navigate back to Workout tab root
+      // Navigate back to Workout tab root with success result
       Navigator.of(context).pop(true);
     } else if (!success && mounted) {
       _showLimitModal();
@@ -461,7 +464,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.surface,
                 shape: BoxShape.circle,
               ),

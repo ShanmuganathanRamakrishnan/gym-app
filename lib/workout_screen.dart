@@ -5,6 +5,7 @@ import 'services/routine_store.dart';
 import 'data/prebuilt_routines.dart';
 import 'screens/explore_routine_detail.dart';
 import 'screens/active_workout_screen.dart';
+import 'screens/create_routine_screen.dart';
 
 /// Mock user experience level (would come from UserProfile)
 const ExperienceLevel _userExperienceLevel = ExperienceLevel.intermediate;
@@ -53,6 +54,19 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
     // Refresh if a routine was added
     if (result == true && mounted) {
+      await _store.refresh();
+      setState(() {});
+    }
+  }
+
+  Future<void> _openCreateRoutine() async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const CreateRoutineScreen()),
+    );
+
+    // Refresh if a routine was created
+    if (result == true && mounted) {
+      await _store.refresh();
       setState(() {});
     }
   }
@@ -136,15 +150,20 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Widget _buildSuggestedCard(
       BuildContext context, Map<String, dynamic> workout) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         // Start suggested workout
-        Navigator.of(context).push(
+        await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => ActiveWorkoutScreen(
               workoutName: workout['title'] as String,
             ),
           ),
         );
+        // Refresh after returning from workout
+        if (mounted) {
+          await _store.refresh();
+          setState(() {});
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(18),
@@ -250,7 +269,13 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       children: routines.map((routine) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: _RoutineCard(routine: routine),
+          child: _RoutineCard(
+            routine: routine,
+            onWorkoutComplete: () async {
+              await _store.refresh();
+              if (mounted) setState(() {});
+            },
+          ),
         );
       }).toList(),
     );
@@ -289,10 +314,24 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Add a routine from Explore below',
+            'Create your own or add from Explore',
             style: TextStyle(
               color: AppColors.textSecondary.withValues(alpha: 0.85),
               fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 18),
+          OutlinedButton.icon(
+            onPressed: _openCreateRoutine,
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Create Routine'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.accent,
+              side: const BorderSide(color: AppColors.accent),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           ),
         ],
@@ -376,14 +415,19 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {
-          Navigator.of(context).push(
+        onPressed: () async {
+          await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => const ActiveWorkoutScreen(
                 workoutName: 'Freestyle Workout',
               ),
             ),
           );
+          // Refresh after returning from workout
+          if (mounted) {
+            await _store.refresh();
+            setState(() {});
+          }
         },
         icon: const Icon(Icons.add, size: 20),
         label: const Text(
@@ -410,15 +454,16 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 /// Routine card for saved routines
 class _RoutineCard extends StatelessWidget {
   final Routine routine;
+  final VoidCallback? onWorkoutComplete;
 
-  const _RoutineCard({required this.routine});
+  const _RoutineCard({required this.routine, this.onWorkoutComplete});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         // Start workout from routine
-        Navigator.of(context).push(
+        await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => ActiveWorkoutScreen(
               routineId: routine.id,
@@ -427,6 +472,8 @@ class _RoutineCard extends StatelessWidget {
             ),
           ),
         );
+        // Refresh after workout
+        onWorkoutComplete?.call();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -562,7 +609,7 @@ class _ExploreCard extends StatelessWidget {
             store.hasTemplate(routine.id)
                 ? Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.accentDim,
                       shape: BoxShape.circle,
                     ),
