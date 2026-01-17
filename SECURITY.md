@@ -5,7 +5,7 @@
 If you discover a security vulnerability, please report it responsibly:
 
 1. **Do NOT** open a public GitHub issue
-2. Email the maintainer directly (add contact email)
+2. Email the maintainer directly (laserwolf50@gmail.com)
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
