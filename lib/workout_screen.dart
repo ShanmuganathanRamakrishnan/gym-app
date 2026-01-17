@@ -283,54 +283,63 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   Widget _buildEmptyRoutines(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.surfaceLight, width: 1),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceLight,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLight.withValues(alpha: 0.7),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.folder_open_outlined,
-              color: AppColors.textSecondary,
-              size: 32,
+              color: AppColors.textMuted,
+              size: 36,
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           const Text(
             'No routines yet',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 17,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             'Create your own or add from Explore',
             style: TextStyle(
-              color: AppColors.textSecondary.withValues(alpha: 0.85),
+              color: AppColors.textSecondary.withValues(alpha: 0.9),
               fontSize: 14,
             ),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 18),
-          OutlinedButton.icon(
-            onPressed: _openCreateRoutine,
-            icon: const Icon(Icons.add, size: 18),
-            label: const Text('Create Routine'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.accent,
-              side: const BorderSide(color: AppColors.accent),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          const SizedBox(height: 22),
+          SizedBox(
+            height: 44,
+            child: OutlinedButton.icon(
+              onPressed: _openCreateRoutine,
+              icon: const Icon(Icons.add, size: 20),
+              label: const Text(
+                'Create Routine',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.accent,
+                side: const BorderSide(color: AppColors.accent, width: 1.5),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -414,6 +423,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Widget _buildEmptyWorkoutCTA(BuildContext context) {
     return SizedBox(
       width: double.infinity,
+      height: 52,
       child: OutlinedButton.icon(
         onPressed: () async {
           await Navigator.of(context).push(
@@ -429,18 +439,17 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             setState(() {});
           }
         },
-        icon: const Icon(Icons.add, size: 20),
+        icon: const Icon(Icons.add_circle_outline, size: 22),
         label: const Text(
           'Start Empty Workout',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.textSecondary,
-          side: const BorderSide(color: AppColors.surfaceLight),
+          foregroundColor: AppColors.textPrimary,
+          side: const BorderSide(color: AppColors.surfaceLight, width: 1.5),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );

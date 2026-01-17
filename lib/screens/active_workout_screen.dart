@@ -537,7 +537,7 @@ class _ExerciseCard extends StatelessWidget {
                       child: Text('Skip Exercise',
                           style: TextStyle(color: AppColors.textPrimary)),
                     ),
-                    PopupMenuItem(
+                    const PopupMenuItem(
                       value: 'remove',
                       child: Text('Remove',
                           style: TextStyle(color: Color(0xFFEF5350))),
@@ -623,7 +623,7 @@ class _ExerciseCard extends StatelessWidget {
 // SET ROW
 // ═══════════════════════════════════════════════════════════════════════════
 
-class _SetRow extends StatelessWidget {
+class _SetRow extends StatefulWidget {
   final WorkoutSet set;
   final Function(int) onRepsChanged;
   final Function(double) onWeightChanged;
@@ -635,6 +635,42 @@ class _SetRow extends StatelessWidget {
     required this.onWeightChanged,
     required this.onCompletedChanged,
   });
+
+  @override
+  State<_SetRow> createState() => _SetRowState();
+}
+
+class _SetRowState extends State<_SetRow> {
+  Timer? _restTimer;
+  int _restSeconds = 0;
+  static const int _defaultRestDuration = 90; // 90 seconds default rest
+
+  @override
+  void dispose() {
+    _restTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startRestTimer() {
+    _restTimer?.cancel();
+    setState(() => _restSeconds = _defaultRestDuration);
+    _restTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_restSeconds > 0) {
+        setState(() => _restSeconds--);
+      } else {
+        _restTimer?.cancel();
+      }
+    });
+  }
+
+  void _skipRest() {
+    _restTimer?.cancel();
+    setState(() => _restSeconds = 0);
+  }
+
+  void _resetRest() {
+    setState(() => _restSeconds = _defaultRestDuration);
+  }
 
   void _showNumberInput(BuildContext context, String label, num currentValue,
       bool isDecimal, Function(num) onChanged) {
@@ -690,104 +726,194 @@ class _SetRow extends StatelessWidget {
     );
   }
 
+  String _formatRestTime(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: set.completed
-            ? AppColors.accentDim.withValues(alpha: 0.3)
-            : Colors.transparent,
-      ),
-      child: Row(
-        children: [
-          // Set number
-          SizedBox(
-            width: 36,
-            child: Text(
-              '${set.setNumber}',
-              style: TextStyle(
-                color: set.completed ? AppColors.accent : AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+    final showRestTimer = _restSeconds > 0;
 
-          // Weight
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _showNumberInput(context, 'Weight (kg)', set.weight,
-                  true, (v) => onWeightChanged(v.toDouble())),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(8),
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: widget.set.completed
+                ? AppColors.accentDim.withValues(alpha: 0.3)
+                : Colors.transparent,
+            border: showRestTimer
+                ? Border.all(
+                    color: AppColors.accent.withValues(alpha: 0.5), width: 2)
+                : null,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              // Set number
+              SizedBox(
+                width: 36,
+                child: Text(
+                  '${widget.set.setNumber}',
+                  style: TextStyle(
+                    color: widget.set.completed
+                        ? AppColors.accent
+                        : AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                child: Center(
-                  child: Text(
-                    set.weight > 0 ? '${set.weight} kg' : '-',
-                    style: TextStyle(
-                      color: set.weight > 0
-                          ? AppColors.textPrimary
-                          : AppColors.textMuted,
-                      fontSize: 15,
+              ),
+
+              // Weight
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _showNumberInput(
+                      context,
+                      'Weight (kg)',
+                      widget.set.weight,
+                      true,
+                      (v) => widget.onWeightChanged(v.toDouble())),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceLight,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        widget.set.weight > 0 ? '${widget.set.weight} kg' : '-',
+                        style: TextStyle(
+                          color: widget.set.weight > 0
+                              ? AppColors.textPrimary
+                              : AppColors.textMuted,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
 
-          // Reps
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _showNumberInput(context, 'Reps', set.reps, false,
-                  (v) => onRepsChanged(v.toInt())),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    set.reps > 0 ? '${set.reps}' : '-',
-                    style: TextStyle(
-                      color: set.reps > 0
-                          ? AppColors.textPrimary
-                          : AppColors.textMuted,
-                      fontSize: 15,
+              // Reps
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _showNumberInput(
+                      context,
+                      'Reps',
+                      widget.set.reps,
+                      false,
+                      (v) => widget.onRepsChanged(v.toInt())),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceLight,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        widget.set.reps > 0 ? '${widget.set.reps}' : '-',
+                        style: TextStyle(
+                          color: widget.set.reps > 0
+                              ? AppColors.textPrimary
+                              : AppColors.textMuted,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
 
-          // Complete checkbox
-          GestureDetector(
-            onTap: () => onCompletedChanged(!set.completed),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color:
-                    set.completed ? AppColors.accent : AppColors.surfaceLight,
-                borderRadius: BorderRadius.circular(10),
+              // Complete checkbox
+              GestureDetector(
+                onTap: () {
+                  final newCompleted = !widget.set.completed;
+                  widget.onCompletedChanged(newCompleted);
+                  if (newCompleted) {
+                    _startRestTimer();
+                  } else {
+                    _skipRest();
+                  }
+                },
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: widget.set.completed
+                        ? AppColors.accent
+                        : AppColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    widget.set.completed ? Icons.check : Icons.circle_outlined,
+                    color: widget.set.completed
+                        ? Colors.white
+                        : AppColors.textMuted,
+                    size: 24,
+                  ),
+                ),
               ),
-              child: Icon(
-                set.completed ? Icons.check : Icons.check_box_outline_blank,
-                color: set.completed ? Colors.white : AppColors.textMuted,
-                size: 22,
-              ),
+            ],
+          ),
+        ),
+
+        // Rest timer indicator
+        if (showRestTimer)
+          Container(
+            margin: const EdgeInsets.only(top: 6, bottom: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.accentDim,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.timer_outlined,
+                    size: 16, color: AppColors.accent),
+                const SizedBox(width: 6),
+                Text(
+                  'Rest: ${_formatRestTime(_restSeconds)}',
+                  style: const TextStyle(
+                    color: AppColors.accent,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: _skipRest,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Skip',
+                      style: TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: _resetRest,
+                  child: const Icon(Icons.refresh,
+                      size: 18, color: AppColors.textMuted),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

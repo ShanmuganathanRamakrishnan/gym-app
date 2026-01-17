@@ -233,55 +233,61 @@ class WorkoutSummaryScreen extends StatelessWidget {
   }
 
   Widget _buildBottomCTAs(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, 16 + bottomPadding),
       decoration: const BoxDecoration(
         color: AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.surfaceLight)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Primary: Finish
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => _finish(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Finish',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-              ),
-            ),
-          ),
-
-          // Secondary: Save as Routine (only for freestyle)
-          if (session.isFreestyle && session.exercises.isNotEmpty) ...[
-            const SizedBox(height: 12),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Primary: Finish
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _saveAsRoutine(context),
-                icon: const Icon(Icons.bookmark_add_outlined, size: 20),
-                label: const Text('Save as Routine'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textPrimary,
-                  side: const BorderSide(color: AppColors.surfaceLight),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => _finish(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Finish',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
                 ),
               ),
             ),
+
+            // Secondary: Save as Routine (only for freestyle)
+            if (session.isFreestyle && session.exercises.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton.icon(
+                  onPressed: () => _saveAsRoutine(context),
+                  icon: const Icon(Icons.bookmark_add_outlined, size: 20),
+                  label: const Text('Save as Routine'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textPrimary,
+                    side: const BorderSide(
+                        color: AppColors.surfaceLight, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
