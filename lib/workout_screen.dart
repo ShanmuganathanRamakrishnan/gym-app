@@ -10,14 +10,44 @@ import 'screens/create_routine_screen.dart';
 /// Mock user experience level (would come from UserProfile)
 const ExperienceLevel _userExperienceLevel = ExperienceLevel.intermediate;
 
-/// Mock data for Workout tab
-final Map<String, dynamic> workoutData = {
-  "suggested": {
-    "title": "Upper Body Strength",
-    "subtitle": "Chest · Shoulders · Triceps",
-    "duration": "45 min",
-    "exercises": 8,
-  },
+/// Suggested workout for today (with exercises)
+final Map<String, dynamic> _suggestedWorkout = {
+  "title": "Upper Body Strength",
+  "subtitle": "Chest · Shoulders · Triceps",
+  "duration": "45 min",
+  "exercises": <RoutineExercise>[
+    RoutineExercise(
+        exerciseId: 'bench_press', name: 'Bench Press', sets: 4, reps: '8-10'),
+    RoutineExercise(
+        exerciseId: 'incline_db_press',
+        name: 'Incline Dumbbell Press',
+        sets: 3,
+        reps: '10-12'),
+    RoutineExercise(
+        exerciseId: 'shoulder_press',
+        name: 'Shoulder Press',
+        sets: 4,
+        reps: '8-10'),
+    RoutineExercise(
+        exerciseId: 'lateral_raise',
+        name: 'Lateral Raise',
+        sets: 3,
+        reps: '12-15'),
+    RoutineExercise(
+        exerciseId: 'tricep_pushdown',
+        name: 'Tricep Pushdown',
+        sets: 3,
+        reps: '10-12'),
+    RoutineExercise(
+        exerciseId: 'overhead_extension',
+        name: 'Overhead Tricep Extension',
+        sets: 3,
+        reps: '10-12'),
+    RoutineExercise(
+        exerciseId: 'cable_fly', name: 'Cable Fly', sets: 3, reps: '12-15'),
+    RoutineExercise(
+        exerciseId: 'face_pull', name: 'Face Pull', sets: 3, reps: '12-15'),
+  ],
 };
 
 class WorkoutScreen extends StatefulWidget {
@@ -73,7 +103,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final suggested = workoutData['suggested'] as Map<String, dynamic>;
+    final suggested = _suggestedWorkout;
 
     if (_loading) {
       return const Scaffold(
@@ -149,13 +179,16 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildSuggestedCard(
       BuildContext context, Map<String, dynamic> workout) {
+    final exercises = workout['exercises'] as List<RoutineExercise>;
+
     return GestureDetector(
       onTap: () async {
-        // Start suggested workout
+        // Start suggested workout with prefilled exercises
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => ActiveWorkoutScreen(
               workoutName: workout['title'] as String,
+              preloadedExercises: exercises,
             ),
           ),
         );

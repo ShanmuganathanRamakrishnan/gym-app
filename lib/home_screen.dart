@@ -2,15 +2,51 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'community_post_sheet.dart';
 import 'screens/active_workout_screen.dart';
+import 'models/routine.dart';
+
+/// Today's workout with exercises
+final Map<String, dynamic> _todayWorkout = {
+  "title": "Upper Body Strength",
+  "subtitle": "Chest · Shoulders · Triceps",
+  "exercises": <RoutineExercise>[
+    RoutineExercise(
+        exerciseId: 'bench_press', name: 'Bench Press', sets: 4, reps: '8-10'),
+    RoutineExercise(
+        exerciseId: 'incline_db_press',
+        name: 'Incline Dumbbell Press',
+        sets: 3,
+        reps: '10-12'),
+    RoutineExercise(
+        exerciseId: 'shoulder_press',
+        name: 'Shoulder Press',
+        sets: 4,
+        reps: '8-10'),
+    RoutineExercise(
+        exerciseId: 'lateral_raise',
+        name: 'Lateral Raise',
+        sets: 3,
+        reps: '12-15'),
+    RoutineExercise(
+        exerciseId: 'tricep_pushdown',
+        name: 'Tricep Pushdown',
+        sets: 3,
+        reps: '10-12'),
+    RoutineExercise(
+        exerciseId: 'overhead_extension',
+        name: 'Overhead Tricep Extension',
+        sets: 3,
+        reps: '10-12'),
+    RoutineExercise(
+        exerciseId: 'cable_fly', name: 'Cable Fly', sets: 3, reps: '12-15'),
+    RoutineExercise(
+        exerciseId: 'face_pull', name: 'Face Pull', sets: 3, reps: '12-15'),
+  ],
+};
 
 /// Sample mock data for Home screen
 final Map<String, dynamic> sampleHomeData = {
   "greeting": "Good Morning",
   "userName": "Alex",
-  "todayWorkout": {
-    "title": "Upper Body Strength",
-    "subtitle": "Chest · Shoulders · Triceps",
-  },
   "microContext": "Last workout: Legs • 2 days ago",
   "quickStart": [
     {"title": "Full Body", "icon": Icons.fitness_center},
@@ -49,7 +85,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final workout = sampleHomeData['todayWorkout'] as Map<String, dynamic>;
+    final workout = _todayWorkout;
     final quickStart = sampleHomeData['quickStart'] as List<dynamic>;
     final community = sampleHomeData['community'] as List<dynamic>;
     final recent = sampleHomeData['recentWorkouts'] as List<dynamic>;
@@ -198,10 +234,12 @@ class HomeScreen extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {
+                final exercises = workout['exercises'] as List<RoutineExercise>;
                 await Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => ActiveWorkoutScreen(
                       workoutName: workout['title'] as String,
+                      preloadedExercises: exercises,
                     ),
                   ),
                 );
