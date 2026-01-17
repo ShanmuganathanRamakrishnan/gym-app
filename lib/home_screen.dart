@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'main.dart';
+import 'community_post_sheet.dart';
 
 /// Sample mock data for Home screen
 final Map<String, dynamic> sampleHomeData = {
@@ -131,7 +132,7 @@ class HomeScreen extends StatelessWidget {
           },
           child: const CircleAvatar(
             radius: 22,
-            backgroundColor: AppColors.surfaceAlt,
+            backgroundColor: AppColors.surfaceLight,
             child: Icon(Icons.person, color: AppColors.textMuted, size: 24),
           ),
         ),
@@ -154,12 +155,11 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Label row
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.play_circle_filled,
-                  color: AppColors.accent, size: 18),
-              const SizedBox(width: 6),
-              const Text(
+              Icon(Icons.play_circle_filled, color: AppColors.accent, size: 18),
+              SizedBox(width: 6),
+              Text(
                 "Today's Workout",
                 style: TextStyle(
                   color: AppColors.accent,
@@ -288,6 +288,22 @@ class HomeScreen extends StatelessWidget {
             workout: post['workout'] as String,
             exercises: (post['exercises'] as List).cast<String>(),
             duration: post['duration'] as String,
+            onTap: () {
+              showCommunityPostSheet(
+                context,
+                CommunityPost(
+                  username: post['username'] as String,
+                  descriptor: 'Consistent trainer',
+                  workout: post['workout'] as String,
+                  duration: post['duration'] as String,
+                  exercises: (post['exercises'] as List).cast<String>(),
+                  totalWorkouts: 124,
+                  activityStatus: 'Active this week',
+                  preferredSplit: 'Push/Pull/Legs',
+                  insight: 'Evening training session',
+                ),
+              );
+            },
           );
         },
       ),
@@ -311,7 +327,7 @@ class HomeScreen extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.surfaceAlt,
+              color: AppColors.surfaceLight,
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.fitness_center,
@@ -378,7 +394,7 @@ class _QuickStartCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.surfaceAlt, width: 1),
+          border: Border.all(color: AppColors.surfaceLight, width: 1),
         ),
         child: Column(
           children: [
@@ -405,103 +421,108 @@ class _CommunityCard extends StatelessWidget {
   final String workout;
   final List<String> exercises;
   final String duration;
+  final VoidCallback? onTap;
 
   const _CommunityCard({
     required this.username,
     required this.workout,
     required this.exercises,
     required this.duration,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 220,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // User row
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 14,
-                backgroundColor: AppColors.surface,
-                child: Text(
-                  username[0],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 220,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // User row
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor: AppColors.surface,
+                  child: Text(
+                    username[0],
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    username,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // Workout name
+            Text(
+              workout,
+              style: const TextStyle(
+                color: AppColors.accent,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+
+            // Exercises
+            Text(
+              exercises.take(3).join(' • '),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const Spacer(),
+
+            // Bottom row: duration + reactions
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  duration,
                   style: const TextStyle(
-                    color: AppColors.textPrimary,
+                    color: AppColors.textMuted,
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  username,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  overflow: TextOverflow.ellipsis,
+                const Row(
+                  children: [
+                    _ReactionButton(emoji: '🔥'),
+                    SizedBox(width: 6),
+                    _ReactionButton(emoji: '💪'),
+                    SizedBox(width: 6),
+                    _ReactionButton(emoji: '👏'),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Workout name
-          Text(
-            workout,
-            style: const TextStyle(
-              color: AppColors.accent,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
+              ],
             ),
-          ),
-          const SizedBox(height: 6),
-
-          // Exercises
-          Text(
-            exercises.take(3).join(' • '),
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const Spacer(),
-
-          // Bottom row: duration + reactions
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                duration,
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 12,
-                ),
-              ),
-              Row(
-                children: [
-                  _ReactionButton(emoji: '🔥'),
-                  const SizedBox(width: 6),
-                  _ReactionButton(emoji: '💪'),
-                  const SizedBox(width: 6),
-                  _ReactionButton(emoji: '👏'),
-                ],
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
