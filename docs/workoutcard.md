@@ -1,31 +1,35 @@
 # WorkoutCard
 
-Displays workout information with progress and CTA.
+Hero card component for displaying today's workout.
 
 ## Props
 
-| Prop | Type | Description |
+| Name | Type | Description |
 |------|------|-------------|
-| title | string | The workout name |
-| subtitle | string | Short description (e.g., muscle groups) |
-| progress | number | 0..1 completion value |
-| ctaLabel | string | Button text |
+| title | string | Workout name |
+| subtitle | string | Muscle groups |
+| duration | string | Time (e.g., "45 min") |
+| exercises | int | Number of exercises |
+| progress | double | 0.0-1.0 completion |
+| onStart | callback | Start button handler |
 
 ## Variants
 
-- **notStarted** - Accent color, play icon
-- **inProgress** - Orange color, pause icon, shows progress bar
-- **completed** - Green color, check icon
+- notStarted: Default state, progress = 0
+- inProgress: Shows progress indicator
+- completed: Full progress, muted CTA
 
 ## States
 
-- Default
-- Loading
-- Disabled
+| State | Visual |
+|-------|--------|
+| Default | Orange CTA |
+| Pressed | Dimmed accent |
+| Disabled | Muted colors |
 
 ## Notes
 
-- CTA should be the primary action (Start / Resume / View)
-- Progress bar only visible when progress > 0
-- Provide loading/disabled states in UI
-- Card uses 16px border radius
+- Uses surface background
+- No shadow (dark mode)
+- 16px border radius
+- Minimum touch target 48px

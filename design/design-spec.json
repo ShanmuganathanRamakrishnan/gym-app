@@ -1,56 +1,122 @@
 {
     "theme": {
-        "bg": "#F7F7F7",
-        "surface": "#FFFFFF",
-        "text": "#0A0A0A",
-        "muted": "#6B6B6B",
-        "accent": "#00C2A8"
+        "background": "#0E0E0E",
+        "surface": "#1A1A1A",
+        "surfaceAlt": "#222222",
+        "divider": "#2A2A2A",
+        "textPrimary": "#FFFFFF",
+        "textSecondary": "#B3B3B3",
+        "textMuted": "#6B6B6B",
+        "accent": "#FC4C02"
     },
     "components": {
-        "AppBar": {
+        "OnboardingSlide": {
             "props": [
+                "image",
                 "title",
-                "avatarUrl"
+                "subtitle"
+            ]
+        },
+        "OnboardingCarousel": {
+            "props": [
+                "slides",
+                "autoAdvanceMs"
+            ]
+        },
+        "AuthForm": {
+            "variants": [
+                "login",
+                "signup"
+            ],
+            "props": [
+                "email",
+                "password",
+                "name?"
+            ]
+        },
+        "SocialButton": {
+            "props": [
+                "provider",
+                "label"
             ]
         },
         "WorkoutCard": {
-            "variants": [
-                "notStarted",
-                "inProgress",
-                "completed"
-            ],
             "props": [
                 "title",
                 "subtitle",
-                "progress",
-                "ctaLabel"
+                "duration",
+                "exercises",
+                "progress"
+            ],
+            "states": [
+                "notStarted",
+                "inProgress",
+                "completed"
             ]
         },
-        "TemplateCard": {
+        "QuickStartCard": {
             "props": [
                 "title",
                 "icon"
             ]
         },
-        "RecentRow": {
+        "RecentItem": {
             "props": [
                 "title",
                 "date",
-                "detail"
+                "duration"
             ]
         },
         "BottomNav": {
             "props": [
                 "selectedIndex"
+            ],
+            "tabs": [
+                "Home",
+                "Workouts",
+                "AI",
+                "Profile"
+            ]
+        },
+        "ProfileHeader": {
+            "props": [
+                "name",
+                "memberSince",
+                "avatarUrl"
+            ]
+        },
+        "StatCard": {
+            "props": [
+                "value",
+                "label"
             ]
         }
     },
     "screens": {
+        "Auth": [
+            "OnboardingCarousel",
+            "AuthForm",
+            "SocialButtons"
+        ],
         "Home": [
-            "AppBar",
+            "Header",
             "WorkoutCard",
-            "TemplateRow",
+            "QuickStart",
             "RecentList",
+            "BottomNav"
+        ],
+        "Workouts": [
+            "CategoryList",
+            "BottomNav"
+        ],
+        "AI": [
+            "EmptyState",
+            "BottomNav"
+        ],
+        "Profile": [
+            "ProfileHeader",
+            "Stats",
+            "Settings",
             "BottomNav"
         ]
     }
