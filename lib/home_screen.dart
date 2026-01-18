@@ -86,7 +86,6 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final workout = _todayWorkout;
-    final quickStart = sampleHomeData['quickStart'] as List<dynamic>;
     final community = sampleHomeData['community'] as List<dynamic>;
     final recent = sampleHomeData['recentWorkouts'] as List<dynamic>;
 
@@ -110,19 +109,13 @@ class HomeScreen extends StatelessWidget {
               _buildMicroContext(context),
               const SizedBox(height: 28),
 
-              // 4) QUICK START SECTION
-              _buildSectionTitle(context, 'Quick Start'),
-              const SizedBox(height: 12),
-              _buildQuickStart(context, quickStart),
-              const SizedBox(height: 28),
-
-              // 5) COMMUNITY SECTION
+              // 4) COMMUNITY SECTION
               _buildSectionTitle(context, 'Community'),
               const SizedBox(height: 12),
               _buildCommunity(context, community),
               const SizedBox(height: 28),
 
-              // 6) RECENT WORKOUTS SECTION
+              // 5) RECENT WORKOUTS SECTION
               _buildSectionTitle(context, 'Recent Workouts'),
               const SizedBox(height: 12),
               ...recent.map(
@@ -295,30 +288,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 4) QUICK START SECTION
-  // ─────────────────────────────────────────────────────────────────────────
-  Widget _buildQuickStart(BuildContext context, List<dynamic> items) {
-    return Row(
-      children: items.asMap().entries.map((entry) {
-        final index = entry.key;
-        final data = entry.value as Map<String, dynamic>;
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: index == 0 ? 0 : 5,
-              right: index == items.length - 1 ? 0 : 5,
-            ),
-            child: _QuickStartCard(
-              title: data['title'] as String,
-              icon: data['icon'] as IconData,
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
   // 5) COMMUNITY SECTION
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildCommunity(BuildContext context, List<dynamic> posts) {
@@ -362,23 +331,32 @@ class HomeScreen extends StatelessWidget {
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildRecentItem(BuildContext context, Map<String, dynamic> workout) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
+        border:
+            Border.all(color: AppColors.surfaceLight.withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
-              borderRadius: BorderRadius.circular(10),
+              color: AppColors.accentDim,
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.fitness_center,
-                color: AppColors.textMuted, size: 20),
+                color: AppColors.accent, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -388,31 +366,37 @@ class HomeScreen extends StatelessWidget {
                 Text(
                   workout['title'] as String,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
-                    fontSize: 15,
+                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   workout['date'] as String,
                   style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
                   ),
                 ),
               ],
             ),
           ),
-          Text(
-            workout['duration'] as String,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              workout['duration'] as String,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          const SizedBox(width: 6),
-          const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
         ],
       ),
     );
@@ -421,46 +405,8 @@ class HomeScreen extends StatelessWidget {
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PRIVATE WIDGETS
+// PRIVATE WIDGETS
 // ═══════════════════════════════════════════════════════════════════════════
-
-/// Quick Start card widget
-class _QuickStartCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-
-  const _QuickStartCard({required this.title, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Quick start action
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.surfaceLight, width: 1),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.accent, size: 28),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// Community post card
 class _CommunityCard extends StatelessWidget {
