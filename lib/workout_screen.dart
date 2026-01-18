@@ -156,6 +156,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   Widget _buildMyRoutinesHeader(BuildContext context) {
+    final hasRoutines = _store.routines.isNotEmpty;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -169,31 +171,35 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          GestureDetector(
-            onTap: _openCreateRoutine,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.accentDim,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add, color: AppColors.accent, size: 18),
-                  SizedBox(width: 4),
-                  Text(
-                    'Create',
-                    style: TextStyle(
-                      color: AppColors.accent,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+          // Only show Create button if user has routines
+          // (empty state card shows Create CTA when no routines)
+          if (hasRoutines)
+            GestureDetector(
+              onTap: _openCreateRoutine,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.accentDim,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add, color: AppColors.accent, size: 18),
+                    SizedBox(width: 4),
+                    Text(
+                      'Create',
+                      style: TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
