@@ -2,46 +2,9 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'community_post_sheet.dart';
 import 'screens/active_workout_screen.dart';
-import 'models/routine.dart';
-
-/// Today's workout with exercises
-final Map<String, dynamic> _todayWorkout = {
-  "title": "Upper Body Strength",
-  "subtitle": "Chest · Shoulders · Triceps",
-  "exercises": <RoutineExercise>[
-    RoutineExercise(
-        exerciseId: 'bench_press', name: 'Bench Press', sets: 4, reps: '8-10'),
-    RoutineExercise(
-        exerciseId: 'incline_db_press',
-        name: 'Incline Dumbbell Press',
-        sets: 3,
-        reps: '10-12'),
-    RoutineExercise(
-        exerciseId: 'shoulder_press',
-        name: 'Shoulder Press',
-        sets: 4,
-        reps: '8-10'),
-    RoutineExercise(
-        exerciseId: 'lateral_raise',
-        name: 'Lateral Raise',
-        sets: 3,
-        reps: '12-15'),
-    RoutineExercise(
-        exerciseId: 'tricep_pushdown',
-        name: 'Tricep Pushdown',
-        sets: 3,
-        reps: '10-12'),
-    RoutineExercise(
-        exerciseId: 'overhead_extension',
-        name: 'Overhead Tricep Extension',
-        sets: 3,
-        reps: '10-12'),
-    RoutineExercise(
-        exerciseId: 'cable_fly', name: 'Cable Fly', sets: 3, reps: '12-15'),
-    RoutineExercise(
-        exerciseId: 'face_pull', name: 'Face Pull', sets: 3, reps: '12-15'),
-  ],
-};
+import 'services/suggested_workout_service.dart';
+import 'services/user_preferences.dart';
+import 'services/workout_history_service.dart';
 
 /// Sample mock data for Home screen
 final Map<String, dynamic> sampleHomeData = {
@@ -80,14 +43,59 @@ final Map<String, dynamic> sampleHomeData = {
   ],
 };
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final SuggestedWorkoutService _suggestionService = SuggestedWorkoutService();
+  final UserPreferences _userPrefs = UserPreferences();
+  final WorkoutHistoryService _historyService = WorkoutHistoryService();
+
+  SuggestedWorkout? _suggestedWorkout;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSuggestion();
+  }
+
+  Future<void> _loadSuggestion() async {
+    await _userPrefs.init();
+    await _historyService.init();
+
+    final userLevel = _userPrefs.getExperienceLevelOrDefault();
+    final lastRoutineId = _historyService.lastCompletedRoutineId;
+    final recentIds = _historyService.getRecentRoutineIds();
+
+    _suggestedWorkout = await _suggestionService.getSuggestedWorkout(
+      userLevel: userLevel,
+      lastCompletedRoutineId: lastRoutineId,
+      recentRoutineIds: recentIds.isNotEmpty ? recentIds : null,
+    );
+
+    if (mounted) {
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final workout = _todayWorkout;
     final community = sampleHomeData['community'] as List<dynamic>;
     final recent = sampleHomeData['recentWorkouts'] as List<dynamic>;
+
+    if (_loading) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.accent),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -102,7 +110,8 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // 2) PRIMARY ACTION CARD — TODAY'S WORKOUT
-              _buildTodayWorkout(context, workout),
+              if (_suggestedWorkout != null)
+                _buildTodayWorkout(context, _suggestedWorkout!),
               const SizedBox(height: 12),
 
               // 3) MICRO-CONTEXT STRIP
@@ -173,8 +182,7 @@ class HomeScreen extends StatelessWidget {
   // ─────────────────────────────────────────────────────────────────────────
   // 2) PRIMARY ACTION CARD — TODAY'S WORKOUT
   // ─────────────────────────────────────────────────────────────────────────
-  Widget _buildTodayWorkout(
-      BuildContext context, Map<String, dynamic> workout) {
+  Widget _buildTodayWorkout(BuildContext context, SuggestedWorkout workout) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -203,7 +211,7 @@ class HomeScreen extends StatelessWidget {
 
           // Workout title (largest text)
           Text(
-            workout['title'] as String,
+            workout.name,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -214,7 +222,7 @@ class HomeScreen extends StatelessWidget {
 
           // Muscle groups
           Text(
-            workout['subtitle'] as String,
+            workout.subtitle,
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
@@ -227,15 +235,20 @@ class HomeScreen extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {
-                final exercises = workout['exercises'] as List<RoutineExercise>;
                 await Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => ActiveWorkoutScreen(
-                      workoutName: workout['title'] as String,
-                      preloadedExercises: exercises,
+                      routineId: workout.routineId,
+                      workoutName: workout.name,
+                      preloadedExercises: workout.exercises,
                     ),
                   ),
                 );
+                // Refresh suggestion after workout
+                if (mounted) {
+                  _suggestionService.invalidateCache();
+                  _loadSuggestion();
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
