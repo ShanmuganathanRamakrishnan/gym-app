@@ -62,6 +62,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
           name: e.name,
           muscleGroup: '',
           targetReps: e.reps,
+          restSeconds: e.restSeconds,
           sets: List.generate(e.sets, (i) => WorkoutSet(setNumber: i + 1)),
         );
       }).toList();
@@ -111,18 +112,35 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   }
 
   void _showEndWorkoutDialog() {
+    final session = _store.activeSession;
+    if (session == null) return;
+
+    // Count incomplete sets (no reps AND no weight)
+    int incompleteSets = 0;
+    for (final exercise in session.exercises) {
+      for (final set in exercise.sets) {
+        if (!set.completed && set.reps == 0 && set.weight == 0) {
+          incompleteSets++;
+        }
+      }
+    }
+
+    final hasIncomplete = incompleteSets > 0;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'End Workout?',
-          style: TextStyle(color: AppColors.textPrimary),
+        title: Text(
+          hasIncomplete ? 'Incomplete logging detected' : 'End Workout?',
+          style: const TextStyle(color: AppColors.textPrimary),
         ),
-        content: const Text(
-          'Are you sure you want to finish this workout session?',
-          style: TextStyle(color: AppColors.textSecondary),
+        content: Text(
+          hasIncomplete
+              ? '$incompleteSets set${incompleteSets > 1 ? 's' : ''} have no reps or weight recorded. End workout anyway? Unsaved progress may be lost.'
+              : 'Are you sure you want to finish this workout session?',
+          style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -139,7 +157,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
               backgroundColor: AppColors.accent,
               foregroundColor: Colors.white,
             ),
-            child: const Text('End Workout'),
+            child: Text(hasIncomplete ? 'End anyway' : 'End Workout'),
           ),
         ],
       ),
