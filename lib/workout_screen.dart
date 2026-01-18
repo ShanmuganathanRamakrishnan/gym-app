@@ -4,6 +4,7 @@ import 'models/routine.dart';
 import 'services/routine_store.dart';
 import 'services/suggested_workout_service.dart';
 import 'services/user_preferences.dart';
+import 'services/workout_history_service.dart';
 import 'data/prebuilt_routines.dart';
 import 'screens/explore_routine_detail.dart';
 import 'screens/active_workout_screen.dart';
@@ -20,6 +21,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   final RoutineStore _store = RoutineStore();
   final SuggestedWorkoutService _suggestionService = SuggestedWorkoutService();
   final UserPreferences _userPrefs = UserPreferences();
+  final WorkoutHistoryService _historyService = WorkoutHistoryService();
   bool _loading = true;
   SuggestedWorkout? _suggestedWorkout;
   ExperienceLevel _userLevel = ExperienceLevel.intermediate;
@@ -36,16 +38,21 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Future<void> _initStore() async {
     await _store.init();
     await _userPrefs.init();
+    await _historyService.init();
 
     // Get user's experience level
     _userLevel = _userPrefs.getExperienceLevelOrDefault();
     _selectedLevel = _userLevel;
 
+    // Get workout history for suggestions
+    final lastRoutineId = _historyService.lastCompletedRoutineId;
+    final recentIds = _historyService.getRecentRoutineIds();
+
     // Get suggested workout
     _suggestedWorkout = await _suggestionService.getSuggestedWorkout(
       userLevel: _userLevel,
-      lastCompletedRoutineId: null, // TODO: Get from history
-      recentRoutineIds: null, // TODO: Get from history
+      lastCompletedRoutineId: lastRoutineId,
+      recentRoutineIds: recentIds.isNotEmpty ? recentIds : null,
     );
 
     if (mounted) {
@@ -380,11 +387,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   void _deleteRoutineWithUndo(
       BuildContext context, Routine routine, int index) async {
+    // Capture scaffold messenger before async gap
+    final messenger = ScaffoldMessenger.of(context);
+
     final deletedRoutine = await _store.deleteRoutineById(routine.id);
     if (mounted) setState(() {});
 
     if (deletedRoutine != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Row(
             children: [

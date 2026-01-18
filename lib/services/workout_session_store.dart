@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/workout_session.dart';
+import 'workout_history_service.dart';
 
 const String _kActiveSessionKey = 'gym_app_active_session';
 
@@ -12,6 +13,7 @@ class WorkoutSessionStore {
 
   WorkoutSession? _activeSession;
   bool _initialized = false;
+  final WorkoutHistoryService _historyService = WorkoutHistoryService();
 
   /// Get current active session
   WorkoutSession? get activeSession => _activeSession;
@@ -22,6 +24,7 @@ class WorkoutSessionStore {
   Future<void> init() async {
     if (_initialized) return;
     await _loadActiveSession();
+    await _historyService.init();
     _initialized = true;
   }
 
@@ -125,7 +128,20 @@ class WorkoutSessionStore {
     await _clearActiveSession();
     _activeSession = null;
 
-    // TODO: Save to history if needed
+    // Save to history
+    final totalSets = completedSession.exercises.fold<int>(
+        0, (sum, ex) => sum + ex.sets.where((s) => s.completed).length);
+
+    await _historyService.addEntry(WorkoutHistoryEntry(
+      id: completedSession.id,
+      routineId: completedSession.routineId,
+      name: completedSession.name,
+      completedAt: completedSession.endTime ?? DateTime.now(),
+      duration: completedSession.totalDuration,
+      exerciseCount: completedSession.exercises.length,
+      totalSets: totalSets,
+    ));
+
     return completedSession;
   }
 
