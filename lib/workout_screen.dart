@@ -126,8 +126,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               const SizedBox(height: 28),
 
               // 2) MY ROUTINES
-              _buildSectionTitle(context, 'My Routines'),
-              const SizedBox(height: 12),
+              _buildMyRoutinesHeader(context),
               _buildRoutinesSection(context),
               const SizedBox(height: 28),
 
@@ -152,6 +151,50 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         color: AppColors.textPrimary,
         fontSize: 18,
         fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+
+  Widget _buildMyRoutinesHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'My Routines',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          GestureDetector(
+            onTap: _openCreateRoutine,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.accentDim,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, color: AppColors.accent, size: 18),
+                  SizedBox(width: 4),
+                  Text(
+                    'Create',
+                    style: TextStyle(
+                      color: AppColors.accent,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

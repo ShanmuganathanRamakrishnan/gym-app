@@ -3,6 +3,7 @@ import '../main.dart';
 import '../data/prebuilt_routines.dart';
 import '../services/routine_store.dart';
 import 'explore_routine_detail.dart';
+import 'create_routine_screen.dart';
 
 /// Full-screen view of all prebuilt routines
 class ExploreAllScreen extends StatefulWidget {
@@ -31,6 +32,16 @@ class _ExploreAllScreenState extends State<ExploreAllScreen> {
   List<PrebuiltRoutine> get _filteredRoutines =>
       getRoutinesByLevel(_selectedLevel);
 
+  Future<void> _openCreateRoutine() async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const CreateRoutineScreen()),
+    );
+    if (result == true && mounted) {
+      await _store.refresh();
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,6 +61,37 @@ class _ExploreAllScreenState extends State<ExploreAllScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: _openCreateRoutine,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.accentDim,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add, color: AppColors.accent, size: 18),
+                    SizedBox(width: 4),
+                    Text(
+                      'Create',
+                      style: TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _loading
           ? const Center(
