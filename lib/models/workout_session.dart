@@ -60,6 +60,7 @@ class WorkoutExercise {
   final String name;
   final String muscleGroup;
   final String targetReps; // From routine, e.g., '8-12'
+  final int restSeconds; // Rest between sets in seconds
   List<WorkoutSet> sets;
   bool skipped;
 
@@ -69,6 +70,7 @@ class WorkoutExercise {
     required this.name,
     this.muscleGroup = '',
     this.targetReps = '',
+    this.restSeconds = 60,
     List<WorkoutSet>? sets,
     this.skipped = false,
   }) : sets = sets ??
@@ -84,6 +86,7 @@ class WorkoutExercise {
         'name': name,
         'muscleGroup': muscleGroup,
         'targetReps': targetReps,
+        'restSeconds': restSeconds,
         'sets': sets.map((s) => s.toJson()).toList(),
         'skipped': skipped,
       };
@@ -95,6 +98,7 @@ class WorkoutExercise {
       name: json['name'] as String,
       muscleGroup: json['muscleGroup'] as String? ?? '',
       targetReps: json['targetReps'] as String? ?? '',
+      restSeconds: json['restSeconds'] as int? ?? 60,
       sets: (json['sets'] as List?)
               ?.map((s) => WorkoutSet.fromJson(s as Map<String, dynamic>))
               .toList() ??

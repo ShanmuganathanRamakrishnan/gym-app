@@ -62,6 +62,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
           name: e.name,
           muscleGroup: '',
           targetReps: e.reps,
+          restSeconds: e.restSeconds,
           sets: List.generate(e.sets, (i) => WorkoutSet(setNumber: i + 1)),
         );
       }).toList();
@@ -111,18 +112,35 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   }
 
   void _showEndWorkoutDialog() {
+    final session = _store.activeSession;
+    if (session == null) return;
+
+    // Count incomplete sets (no reps AND no weight)
+    int incompleteSets = 0;
+    for (final exercise in session.exercises) {
+      for (final set in exercise.sets) {
+        if (!set.completed && set.reps == 0 && set.weight == 0) {
+          incompleteSets++;
+        }
+      }
+    }
+
+    final hasIncomplete = incompleteSets > 0;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'End Workout?',
-          style: TextStyle(color: AppColors.textPrimary),
+        title: Text(
+          hasIncomplete ? 'Incomplete logging detected' : 'End Workout?',
+          style: const TextStyle(color: AppColors.textPrimary),
         ),
-        content: const Text(
-          'Are you sure you want to finish this workout session?',
-          style: TextStyle(color: AppColors.textSecondary),
+        content: Text(
+          hasIncomplete
+              ? '$incompleteSets set${incompleteSets > 1 ? 's' : ''} have no reps or weight recorded. End workout anyway? Unsaved progress may be lost.'
+              : 'Are you sure you want to finish this workout session?',
+          style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -139,7 +157,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
               backgroundColor: AppColors.accent,
               foregroundColor: Colors.white,
             ),
-            child: const Text('End Workout'),
+            child: Text(hasIncomplete ? 'End anyway' : 'End Workout'),
           ),
         ],
       ),
@@ -594,11 +612,27 @@ class _ExerciseCard extends StatelessWidget {
               final set = entry.value;
               return _SetRow(
                 set: set,
+                restSeconds: exercise.restSeconds,
                 onRepsChanged: (reps) => onSetUpdated(index, reps, null, null),
                 onWeightChanged: (weight) =>
                     onSetUpdated(index, null, weight, null),
-                onCompletedChanged: (completed) =>
-                    onSetUpdated(index, null, null, completed),
+                onCompletedChanged: (completed) {
+                  // Validate: require reps OR weight before marking complete
+                  if (completed && set.reps == 0 && set.weight == 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Please log reps or weight for this set before marking it complete.',
+                        ),
+                        backgroundColor: AppColors.surface,
+                        behavior: SnackBarBehavior.floating,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    return; // Block completion
+                  }
+                  onSetUpdated(index, null, null, completed);
+                },
               );
             }),
 
@@ -638,12 +672,14 @@ class _ExerciseCard extends StatelessWidget {
 
 class _SetRow extends StatefulWidget {
   final WorkoutSet set;
+  final int restSeconds; // Rest duration from exercise
   final Function(int) onRepsChanged;
   final Function(double) onWeightChanged;
   final Function(bool) onCompletedChanged;
 
   const _SetRow({
     required this.set,
+    required this.restSeconds,
     required this.onRepsChanged,
     required this.onWeightChanged,
     required this.onCompletedChanged,
@@ -656,7 +692,6 @@ class _SetRow extends StatefulWidget {
 class _SetRowState extends State<_SetRow> {
   Timer? _restTimer;
   int _restSeconds = 0;
-  static const int _defaultRestDuration = 90; // 90 seconds default rest
 
   @override
   void dispose() {
@@ -666,7 +701,7 @@ class _SetRowState extends State<_SetRow> {
 
   void _startRestTimer() {
     _restTimer?.cancel();
-    setState(() => _restSeconds = _defaultRestDuration);
+    setState(() => _restSeconds = widget.restSeconds);
     _restTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (_restSeconds > 0) {
         setState(() => _restSeconds--);
@@ -682,7 +717,7 @@ class _SetRowState extends State<_SetRow> {
   }
 
   void _resetRest() {
-    setState(() => _restSeconds = _defaultRestDuration);
+    setState(() => _restSeconds = widget.restSeconds);
   }
 
   void _showNumberInput(BuildContext context, String label, num currentValue,
