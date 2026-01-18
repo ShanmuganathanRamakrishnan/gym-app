@@ -253,8 +253,20 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Start this workout
+                onPressed: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ActiveWorkoutScreen(
+                        workoutName: workout['title'] as String,
+                        preloadedExercises: exercises,
+                      ),
+                    ),
+                  );
+                  // Refresh after returning from workout
+                  if (mounted) {
+                    await _store.refresh();
+                    setState(() {});
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
