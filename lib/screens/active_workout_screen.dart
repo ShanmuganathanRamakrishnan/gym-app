@@ -5,6 +5,7 @@ import '../main.dart';
 import '../models/workout_session.dart';
 import '../models/routine.dart';
 import '../services/workout_session_store.dart';
+import '../widgets/exercise_info_button.dart';
 import 'workout_summary_screen.dart';
 
 /// Full-screen active workout session
@@ -495,32 +496,43 @@ class _ExerciseCard extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        exercise.name,
-                        style: TextStyle(
-                          color: exercise.skipped
-                              ? AppColors.textMuted
-                              : AppColors.textPrimary,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          decoration: exercise.skipped
-                              ? TextDecoration.lineThrough
-                              : null,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              exercise.name,
+                              style: TextStyle(
+                                color: exercise.skipped
+                                    ? AppColors.textMuted
+                                    : AppColors.textPrimary,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                decoration: exercise.skipped
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                              ),
+                            ),
+                            if (exercise.muscleGroup.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                exercise.muscleGroup,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                      if (exercise.muscleGroup.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          exercise.muscleGroup,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+                      const SizedBox(width: 8),
+                      ExerciseInfoButton(
+                        exerciseId: exercise.exerciseId,
+                        exerciseName: exercise.name,
+                      ),
                     ],
                   ),
                 ),

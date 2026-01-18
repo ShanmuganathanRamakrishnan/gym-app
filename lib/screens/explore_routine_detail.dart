@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../data/prebuilt_routines.dart';
 import '../services/routine_store.dart';
+import '../widgets/exercise_info_button.dart';
 
 /// Read-only detail screen for prebuilt routines
 class ExploreRoutineDetail extends StatefulWidget {
@@ -244,6 +245,12 @@ class _ExploreRoutineDetailState extends State<ExploreRoutineDetail> {
               ),
             ),
           ),
+          ExerciseInfoButton(
+            exerciseId: exercise.exerciseId,
+            exerciseName: exercise.name,
+            size: 18,
+          ),
+          const SizedBox(width: 12),
           Text(
             '${exercise.sets}×${exercise.reps}',
             style: const TextStyle(
