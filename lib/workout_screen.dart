@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'models/routine.dart';
 import 'services/routine_store.dart';
+import 'services/suggested_workout_service.dart';
 import 'data/prebuilt_routines.dart';
 import 'screens/explore_routine_detail.dart';
 import 'screens/active_workout_screen.dart';
@@ -9,46 +10,6 @@ import 'screens/create_routine_screen.dart';
 
 /// Mock user experience level (would come from UserProfile)
 const ExperienceLevel _userExperienceLevel = ExperienceLevel.intermediate;
-
-/// Suggested workout for today (with exercises)
-final Map<String, dynamic> _suggestedWorkout = {
-  "title": "Upper Body Strength",
-  "subtitle": "Chest · Shoulders · Triceps",
-  "duration": "45 min",
-  "exercises": <RoutineExercise>[
-    RoutineExercise(
-        exerciseId: 'bench_press', name: 'Bench Press', sets: 4, reps: '8-10'),
-    RoutineExercise(
-        exerciseId: 'incline_db_press',
-        name: 'Incline Dumbbell Press',
-        sets: 3,
-        reps: '10-12'),
-    RoutineExercise(
-        exerciseId: 'shoulder_press',
-        name: 'Shoulder Press',
-        sets: 4,
-        reps: '8-10'),
-    RoutineExercise(
-        exerciseId: 'lateral_raise',
-        name: 'Lateral Raise',
-        sets: 3,
-        reps: '12-15'),
-    RoutineExercise(
-        exerciseId: 'tricep_pushdown',
-        name: 'Tricep Pushdown',
-        sets: 3,
-        reps: '10-12'),
-    RoutineExercise(
-        exerciseId: 'overhead_extension',
-        name: 'Overhead Tricep Extension',
-        sets: 3,
-        reps: '10-12'),
-    RoutineExercise(
-        exerciseId: 'cable_fly', name: 'Cable Fly', sets: 3, reps: '12-15'),
-    RoutineExercise(
-        exerciseId: 'face_pull', name: 'Face Pull', sets: 3, reps: '12-15'),
-  ],
-};
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -59,7 +20,9 @@ class WorkoutScreen extends StatefulWidget {
 
 class _WorkoutScreenState extends State<WorkoutScreen> {
   final RoutineStore _store = RoutineStore();
+  final SuggestedWorkoutService _suggestionService = SuggestedWorkoutService();
   bool _loading = true;
+  SuggestedWorkout? _suggestedWorkout;
 
   // Explore filter state
   ExperienceLevel _selectedLevel = _userExperienceLevel;
@@ -72,6 +35,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   Future<void> _initStore() async {
     await _store.init();
+
+    // Get suggested workout
+    _suggestedWorkout = await _suggestionService.getSuggestedWorkout(
+      userLevel: _userExperienceLevel,
+      lastCompletedRoutineId: null, // TODO: Get from history
+      recentRoutineIds: null, // TODO: Get from history
+    );
+
     if (mounted) {
       setState(() => _loading = false);
     }
@@ -103,9 +74,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final suggested = _suggestedWorkout;
-
-    if (_loading) {
+    if (_loading || _suggestedWorkout == null) {
       return const Scaffold(
         backgroundColor: AppColors.background,
         body: Center(
@@ -136,7 +105,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               // 1) SUGGESTED FOR TODAY
               _buildSectionTitle(context, 'Suggested for Today'),
               const SizedBox(height: 12),
-              _buildSuggestedCard(context, suggested),
+              _buildSuggestedCard(context, _suggestedWorkout!),
               const SizedBox(height: 28),
 
               // 2) MY ROUTINES
@@ -177,24 +146,27 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   // ─────────────────────────────────────────────────────────────────────────
   // 1) SUGGESTED FOR TODAY
   // ─────────────────────────────────────────────────────────────────────────
-  Widget _buildSuggestedCard(
-      BuildContext context, Map<String, dynamic> workout) {
-    final exercises = workout['exercises'] as List<RoutineExercise>;
-
+  Widget _buildSuggestedCard(BuildContext context, SuggestedWorkout suggested) {
     return GestureDetector(
       onTap: () async {
         // Start suggested workout with prefilled exercises
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => ActiveWorkoutScreen(
-              workoutName: workout['title'] as String,
-              preloadedExercises: exercises,
+              workoutName: suggested.name,
+              preloadedExercises: suggested.exercises,
             ),
           ),
         );
         // Refresh after returning from workout
         if (mounted) {
+          _suggestionService.invalidateCache();
           await _store.refresh();
+          _suggestedWorkout = await _suggestionService.getSuggestedWorkout(
+            userLevel: _userExperienceLevel,
+            lastCompletedRoutineId: null,
+            recentRoutineIds: null,
+          );
           setState(() {});
         }
       },
@@ -225,7 +197,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              workout['title'] as String,
+              suggested.name,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -234,7 +206,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              workout['subtitle'] as String,
+              suggested.subtitle,
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,
@@ -243,10 +215,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                _buildMeta(Icons.timer_outlined, workout['duration'] as String),
+                _buildMeta(Icons.timer_outlined, '~45 min'),
                 const SizedBox(width: 16),
                 _buildMeta(Icons.format_list_numbered,
-                    '${exercises.length} exercises'),
+                    '${suggested.exerciseCount} exercises'),
               ],
             ),
             const SizedBox(height: 16),
@@ -257,14 +229,21 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   await Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => ActiveWorkoutScreen(
-                        workoutName: workout['title'] as String,
-                        preloadedExercises: exercises,
+                        workoutName: suggested.name,
+                        preloadedExercises: suggested.exercises,
                       ),
                     ),
                   );
                   // Refresh after returning from workout
                   if (mounted) {
+                    _suggestionService.invalidateCache();
                     await _store.refresh();
+                    _suggestedWorkout =
+                        await _suggestionService.getSuggestedWorkout(
+                      userLevel: _userExperienceLevel,
+                      lastCompletedRoutineId: null,
+                      recentRoutineIds: null,
+                    );
                     setState(() {});
                   }
                 },
