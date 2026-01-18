@@ -428,7 +428,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           elevation: 6,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           duration: const Duration(seconds: 4),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
