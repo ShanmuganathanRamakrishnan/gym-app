@@ -67,7 +67,13 @@ const List<Map<String, String>> _sampleExercises = [
 
 /// Modal bottom sheet for selecting exercises (Fix #5 - improved visual clarity)
 class AddExerciseModal extends StatefulWidget {
-  const AddExerciseModal({super.key});
+  /// List of exercise IDs already in the routine (for deduplication)
+  final Set<String> existingExerciseIds;
+
+  const AddExerciseModal({
+    super.key,
+    this.existingExerciseIds = const {},
+  });
 
   @override
   State<AddExerciseModal> createState() => _AddExerciseModalState();
@@ -88,9 +94,28 @@ class _AddExerciseModalState extends State<AddExerciseModal> {
   }
 
   void _selectExercise(Map<String, String> exercise) {
+    final exerciseId = exercise['id']!;
+
+    // Check for duplicate
+    if (widget.existingExerciseIds.contains(exerciseId)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Exercise already in routine. Edit existing entry to change sets/reps/rest.',
+          ),
+          backgroundColor: AppColors.surface,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return; // Do not add duplicate
+    }
+
     final routineExercise = RoutineExercise(
-      exerciseId: exercise['id']!,
+      exerciseId: exerciseId,
       name: exercise['name']!,
+      // Uses defaults: sets=3, reps='8-12', restSeconds=60
+      // User can edit in create_routine_screen
     );
     Navigator.of(context).pop(routineExercise);
   }

@@ -147,11 +147,14 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
   }
 
   Future<void> _openAddExercise() async {
+    // Get IDs of exercises already in the routine for deduplication
+    final existingIds = _exercises.map((e) => e.exerciseId).toSet();
+
     final result = await showModalBottomSheet<RoutineExercise>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const AddExerciseModal(),
+      builder: (context) => AddExerciseModal(existingExerciseIds: existingIds),
     );
 
     if (result != null) {
