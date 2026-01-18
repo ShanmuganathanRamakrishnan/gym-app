@@ -9,6 +9,7 @@ import 'data/prebuilt_routines.dart';
 import 'screens/explore_routine_detail.dart';
 import 'screens/active_workout_screen.dart';
 import 'screens/create_routine_screen.dart';
+import 'screens/explore_all_screen.dart';
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -118,6 +119,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               _buildSectionTitle(context, 'Suggested for Today'),
               const SizedBox(height: 12),
               _buildSuggestedCard(context, _suggestedWorkout!),
+              const SizedBox(height: 16),
+
+              // START EMPTY WORKOUT (relocated here)
+              _buildEmptyWorkoutCTA(context),
               const SizedBox(height: 28),
 
               // 2) MY ROUTINES
@@ -132,10 +137,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               _buildExploreFilters(),
               const SizedBox(height: 16),
               _buildExploreSection(context),
-              const SizedBox(height: 28),
-
-              // 4) START EMPTY WORKOUT
-              _buildEmptyWorkoutCTA(context),
               const SizedBox(height: 24),
             ],
           ),
@@ -564,17 +565,53 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       );
     }
 
+    // Show limited routines with See more
+    final displayRoutines = filteredRoutines.take(3).toList();
+
     return Column(
-      children: filteredRoutines.map((routine) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: _ExploreCard(
-            routine: routine,
-            store: _store,
-            onTap: () => _openExploreDetail(routine),
+      children: [
+        ...displayRoutines.map((routine) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _ExploreCard(
+              routine: routine,
+              store: _store,
+              onTap: () => _openExploreDetail(routine),
+            ),
+          );
+        }),
+
+        // See more button
+        if (filteredRoutines.length > 3)
+          GestureDetector(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ExploreAllScreen()),
+            ),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'See more routines',
+                    style: TextStyle(
+                      color: AppColors.accent,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(width: 6),
+                  Icon(Icons.arrow_forward, color: AppColors.accent, size: 18),
+                ],
+              ),
+            ),
           ),
-        );
-      }).toList(),
+      ],
     );
   }
 
