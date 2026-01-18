@@ -668,7 +668,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
 // EXERCISE LIST ITEM (improved visual clarity - Fix #5)
 // ═══════════════════════════════════════════════════════════════════════════
 
-class _ExerciseListItem extends StatelessWidget {
+class _ExerciseListItem extends StatefulWidget {
   final RoutineExercise exercise;
   final int index;
   final VoidCallback onRemove;
@@ -680,6 +680,48 @@ class _ExerciseListItem extends StatelessWidget {
     required this.onRemove,
     required this.onUpdate,
   });
+
+  @override
+  State<_ExerciseListItem> createState() => _ExerciseListItemState();
+}
+
+class _ExerciseListItemState extends State<_ExerciseListItem> {
+  late TextEditingController _setsController;
+  late TextEditingController _repsController;
+  late TextEditingController _restController;
+
+  @override
+  void initState() {
+    super.initState();
+    _setsController =
+        TextEditingController(text: widget.exercise.sets.toString());
+    _repsController = TextEditingController(text: widget.exercise.reps);
+    _restController =
+        TextEditingController(text: widget.exercise.restSeconds.toString());
+  }
+
+  @override
+  void dispose() {
+    _setsController.dispose();
+    _repsController.dispose();
+    _restController.dispose();
+    super.dispose();
+  }
+
+  void _updateExercise() {
+    final sets = int.tryParse(_setsController.text) ?? widget.exercise.sets;
+    final reps = _repsController.text.isNotEmpty
+        ? _repsController.text
+        : widget.exercise.reps;
+    final rest =
+        int.tryParse(_restController.text) ?? widget.exercise.restSeconds;
+
+    widget.onUpdate(widget.exercise.copyWith(
+      sets: sets,
+      reps: reps,
+      restSeconds: rest,
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -705,7 +747,7 @@ class _ExerciseListItem extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    '${index + 1}',
+                    '${widget.index + 1}',
                     style: const TextStyle(
                       color: AppColors.accent,
                       fontSize: 13,
@@ -717,7 +759,7 @@ class _ExerciseListItem extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  exercise.name,
+                  widget.exercise.name,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
@@ -726,7 +768,7 @@ class _ExerciseListItem extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: onRemove,
+                onPressed: widget.onRemove,
                 icon: const Icon(Icons.close, size: 20),
                 color: AppColors.textMuted,
                 constraints: const BoxConstraints(),
@@ -736,14 +778,16 @@ class _ExerciseListItem extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          // Editable fields with better contrast
+          // Editable fields
           Row(
             children: [
-              _buildField('Sets', exercise.sets.toString()),
+              _buildEditableField(
+                  'Sets', _setsController, TextInputType.number),
               const SizedBox(width: 12),
-              _buildField('Reps', exercise.reps),
+              _buildEditableField('Reps', _repsController, TextInputType.text),
               const SizedBox(width: 12),
-              _buildField('Rest', '${exercise.restSeconds}s'),
+              _buildEditableField(
+                  'Rest (s)', _restController, TextInputType.number),
             ],
           ),
         ],
@@ -751,7 +795,8 @@ class _ExerciseListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildField(String label, String value) {
+  Widget _buildEditableField(String label, TextEditingController controller,
+      TextInputType keyboardType) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -765,21 +810,30 @@ class _ExerciseListItem extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
-              borderRadius: BorderRadius.circular(8),
+          TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
             ),
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: AppColors.surfaceLight,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.accent, width: 1),
               ),
             ),
+            onChanged: (_) => _updateExercise(),
           ),
         ],
       ),

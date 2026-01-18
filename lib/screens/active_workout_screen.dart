@@ -61,6 +61,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
           exerciseId: e.exerciseId,
           name: e.name,
           muscleGroup: '',
+          targetReps: e.reps,
           sets: List.generate(e.sets, (i) => WorkoutSet(setNumber: i + 1)),
         );
       }).toList();
