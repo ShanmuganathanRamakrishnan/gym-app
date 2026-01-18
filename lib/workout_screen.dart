@@ -312,13 +312,26 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 _deleteRoutineWithUndo(context, routine, routineIndex),
             background: Container(
               alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
+              padding: const EdgeInsets.only(right: 24),
               decoration: BoxDecoration(
-                color: const Color(0xFFEF5350),
+                color: const Color(0xFFD32F2F).withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.delete_outline,
-                  color: Colors.white, size: 28),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Delete',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.delete_outline, color: Colors.white, size: 22),
+                ],
+              ),
             ),
             child: _RoutineCard(
               routine: routine,
@@ -358,7 +371,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEF5350),
+                  backgroundColor: const Color(0xFFD32F2F),
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Delete'),
@@ -377,17 +390,47 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     if (deletedRoutine != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Routine deleted'),
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_outline,
+                  color: AppColors.accent, size: 20),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Routine deleted',
+                  style: TextStyle(color: AppColors.textPrimary),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  _store.restoreRoutine(deletedRoutine, index);
+                  if (mounted) setState(() {});
+                },
+                style: TextButton.styleFrom(
+                  backgroundColor: AppColors.accentDim,
+                  foregroundColor: AppColors.accent,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'UNDO',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
           backgroundColor: AppColors.surface,
           behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            label: 'UNDO',
-            textColor: AppColors.accent,
-            onPressed: () async {
-              await _store.restoreRoutine(deletedRoutine, index);
-              if (mounted) setState(() {});
-            },
-          ),
+          elevation: 6,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+          duration: const Duration(seconds: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       );
     }
