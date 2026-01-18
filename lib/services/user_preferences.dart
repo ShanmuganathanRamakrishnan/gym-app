@@ -22,8 +22,20 @@ class UserPreferences {
 
   /// Initialize preferences from storage
   Future<void> init() async {
-    if (_initialized) return;
+    // Always reload from storage to handle hot reload correctly
+    await _loadFromStorage();
+    _initialized = true;
+  }
 
+  /// Force reload from storage (useful after app restart)
+  Future<void> refresh() async {
+    _initialized = false;
+    await _loadFromStorage();
+    _initialized = true;
+  }
+
+  /// Load preferences from storage
+  Future<void> _loadFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
@@ -31,14 +43,16 @@ class UserPreferences {
       final levelString = prefs.getString(_kExperienceLevelKey);
       if (levelString != null) {
         _experienceLevel = _parseLevel(levelString);
+      } else {
+        _experienceLevel = null;
       }
 
       // Load onboarding status
       _onboardingCompleted = prefs.getBool(_kOnboardingCompletedKey) ?? false;
-
-      _initialized = true;
     } catch (e) {
-      _initialized = true;
+      // Reset to defaults on error
+      _experienceLevel = null;
+      _onboardingCompleted = false;
     }
   }
 
