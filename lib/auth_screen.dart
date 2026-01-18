@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'auth_widgets.dart';
 import 'main.dart';
+import 'services/user_preferences.dart';
+import 'screens/experience_onboarding_screen.dart';
 
 /// Auth / Onboarding screen with carousel and login/signup forms
 class AuthScreen extends StatefulWidget {
@@ -17,11 +19,26 @@ class _AuthScreenState extends State<AuthScreen> {
     setState(() => _showLogin = !_showLogin);
   }
 
-  void _handleAuthSuccess() {
-    // Navigate to home, replacing auth screen
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const MainShell()),
-    );
+  Future<void> _handleAuthSuccess() async {
+    // Check if onboarding is completed
+    final prefs = UserPreferences();
+    await prefs.init();
+
+    if (!prefs.onboardingCompleted) {
+      // Show onboarding
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ExperienceOnboardingScreen()),
+        );
+      }
+    } else {
+      // Navigate directly to home
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainShell()),
+        );
+      }
+    }
   }
 
   @override

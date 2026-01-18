@@ -3,13 +3,11 @@ import 'main.dart';
 import 'models/routine.dart';
 import 'services/routine_store.dart';
 import 'services/suggested_workout_service.dart';
+import 'services/user_preferences.dart';
 import 'data/prebuilt_routines.dart';
 import 'screens/explore_routine_detail.dart';
 import 'screens/active_workout_screen.dart';
 import 'screens/create_routine_screen.dart';
-
-/// Mock user experience level (would come from UserProfile)
-const ExperienceLevel _userExperienceLevel = ExperienceLevel.intermediate;
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
@@ -21,11 +19,13 @@ class WorkoutScreen extends StatefulWidget {
 class _WorkoutScreenState extends State<WorkoutScreen> {
   final RoutineStore _store = RoutineStore();
   final SuggestedWorkoutService _suggestionService = SuggestedWorkoutService();
+  final UserPreferences _userPrefs = UserPreferences();
   bool _loading = true;
   SuggestedWorkout? _suggestedWorkout;
+  ExperienceLevel _userLevel = ExperienceLevel.intermediate;
 
   // Explore filter state
-  ExperienceLevel _selectedLevel = _userExperienceLevel;
+  late ExperienceLevel _selectedLevel;
 
   @override
   void initState() {
@@ -35,10 +35,15 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   Future<void> _initStore() async {
     await _store.init();
+    await _userPrefs.init();
+
+    // Get user's experience level
+    _userLevel = _userPrefs.getExperienceLevelOrDefault();
+    _selectedLevel = _userLevel;
 
     // Get suggested workout
     _suggestedWorkout = await _suggestionService.getSuggestedWorkout(
-      userLevel: _userExperienceLevel,
+      userLevel: _userLevel,
       lastCompletedRoutineId: null, // TODO: Get from history
       recentRoutineIds: null, // TODO: Get from history
     );
@@ -163,7 +168,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           _suggestionService.invalidateCache();
           await _store.refresh();
           _suggestedWorkout = await _suggestionService.getSuggestedWorkout(
-            userLevel: _userExperienceLevel,
+            userLevel: _userLevel,
             lastCompletedRoutineId: null,
             recentRoutineIds: null,
           );
@@ -240,7 +245,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     await _store.refresh();
                     _suggestedWorkout =
                         await _suggestionService.getSuggestedWorkout(
-                      userLevel: _userExperienceLevel,
+                      userLevel: _userLevel,
                       lastCompletedRoutineId: null,
                       recentRoutineIds: null,
                     );
