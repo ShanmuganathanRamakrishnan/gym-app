@@ -82,6 +82,7 @@ class AddExerciseModal extends StatefulWidget {
 class _AddExerciseModalState extends State<AddExerciseModal> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String? _duplicateWarning; // Inline warning for duplicates
 
   List<Map<String, String>> get _filteredExercises {
     if (_searchQuery.isEmpty) return _sampleExercises;
@@ -96,18 +97,16 @@ class _AddExerciseModalState extends State<AddExerciseModal> {
   void _selectExercise(Map<String, String> exercise) {
     final exerciseId = exercise['id']!;
 
-    // Check for duplicate
+    // Check for duplicate - show inline warning instead of Snackbar
     if (widget.existingExerciseIds.contains(exerciseId)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Exercise already in routine. Edit existing entry to change sets/reps/rest.',
-          ),
-          backgroundColor: AppColors.surface,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      setState(() {
+        _duplicateWarning =
+            'Exercise already in routine. Edit existing entry to change sets/reps/rest.';
+      });
+      // Auto-clear warning after 3 seconds
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) setState(() => _duplicateWarning = null);
+      });
       return; // Do not add duplicate
     }
 
@@ -194,7 +193,44 @@ class _AddExerciseModalState extends State<AddExerciseModal> {
                   onChanged: (value) => setState(() => _searchQuery = value),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+
+              // Duplicate warning banner (inline, visible above list)
+              if (_duplicateWarning != null)
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border:
+                        Border.all(color: Colors.orange.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded,
+                          color: Colors.orange, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _duplicateWarning!,
+                          style: const TextStyle(
+                            color: Colors.orange,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(() => _duplicateWarning = null),
+                        child: const Icon(Icons.close,
+                            color: Colors.orange, size: 18),
+                      ),
+                    ],
+                  ),
+                ),
+
+              if (_duplicateWarning != null) const SizedBox(height: 8),
 
               // Exercise list (Fix #5 - improved spacing and contrast)
               Expanded(
