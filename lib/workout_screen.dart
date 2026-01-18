@@ -300,18 +300,97 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
     return Column(
       children: routines.map((routine) {
+        final routineIndex = _store.getRoutineIndex(routine.id);
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: _RoutineCard(
-            routine: routine,
-            onWorkoutComplete: () async {
-              await _store.refresh();
-              if (mounted) setState(() {});
-            },
+          child: Dismissible(
+            key: Key(routine.id),
+            direction: DismissDirection.endToStart,
+            confirmDismiss: (_) => _confirmDeleteRoutine(context, routine.name),
+            onDismissed: (_) =>
+                _deleteRoutineWithUndo(context, routine, routineIndex),
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF5350),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.delete_outline,
+                  color: Colors.white, size: 28),
+            ),
+            child: _RoutineCard(
+              routine: routine,
+              onWorkoutComplete: () async {
+                await _store.refresh();
+                if (mounted) setState(() {});
+              },
+            ),
           ),
         );
       }).toList(),
     );
+  }
+
+  Future<bool> _confirmDeleteRoutine(
+      BuildContext context, String routineName) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppColors.surface,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text(
+              'Delete this routine?',
+              style: TextStyle(color: AppColors.textPrimary),
+            ),
+            content: Text(
+              'Are you sure you want to delete "$routineName"?',
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel',
+                    style: TextStyle(color: AppColors.textMuted)),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF5350),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  void _deleteRoutineWithUndo(
+      BuildContext context, Routine routine, int index) async {
+    final deletedRoutine = await _store.deleteRoutineById(routine.id);
+    if (mounted) setState(() {});
+
+    if (deletedRoutine != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Routine deleted'),
+          backgroundColor: AppColors.surface,
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'UNDO',
+            textColor: AppColors.accent,
+            onPressed: () async {
+              await _store.restoreRoutine(deletedRoutine, index);
+              if (mounted) setState(() {});
+            },
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildEmptyRoutines(BuildContext context) {

@@ -81,10 +81,26 @@ class RoutineStore {
     await _loadFromStorage();
   }
 
-  Future<bool> deleteRoutine(String id) async {
+  /// Get the index of a routine by id
+  int getRoutineIndex(String id) {
+    return _routines.indexWhere((r) => r.id == id);
+  }
+
+  /// Delete a routine by id, returns the deleted routine (null if not found)
+  Future<Routine?> deleteRoutineById(String id) async {
     final index = _routines.indexWhere((r) => r.id == id);
-    if (index == -1) return false;
-    _routines.removeAt(index);
+    if (index == -1) return null;
+
+    final routine = _routines.removeAt(index);
+    await _saveToStorage();
+    return routine;
+  }
+
+  /// Restore a deleted routine at a specific index (for undo)
+  Future<bool> restoreRoutine(Routine routine, int index) async {
+    // Clamp index to valid range
+    final safeIndex = index.clamp(0, _routines.length);
+    _routines.insert(safeIndex, routine);
     await _saveToStorage();
     return true;
   }
