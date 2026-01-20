@@ -13,6 +13,7 @@ class WorkoutHistoryEntry {
   final Duration duration;
   final int exerciseCount;
   final int totalSets;
+  final bool hasLoggedData; // True if any set has reps > 0 OR weight > 0
 
   const WorkoutHistoryEntry({
     required this.id,
@@ -22,6 +23,7 @@ class WorkoutHistoryEntry {
     required this.duration,
     required this.exerciseCount,
     required this.totalSets,
+    this.hasLoggedData = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -32,6 +34,7 @@ class WorkoutHistoryEntry {
         'durationSeconds': duration.inSeconds,
         'exerciseCount': exerciseCount,
         'totalSets': totalSets,
+        'hasLoggedData': hasLoggedData,
       };
 
   factory WorkoutHistoryEntry.fromJson(Map<String, dynamic> json) {
@@ -43,6 +46,7 @@ class WorkoutHistoryEntry {
       duration: Duration(seconds: json['durationSeconds'] as int),
       exerciseCount: json['exerciseCount'] as int,
       totalSets: json['totalSets'] as int,
+      hasLoggedData: json['hasLoggedData'] as bool? ?? false,
     );
   }
 }
@@ -123,16 +127,30 @@ class WorkoutHistoryService {
     await _saveToStorage();
   }
 
+  /// Clear all workout history (for debugging/reset)
+  Future<void> clearAllHistory() async {
+    _history.clear();
+    await _saveToStorage();
+  }
+
   /// Get recent workouts for display
   List<WorkoutHistoryEntry> getRecentWorkouts({int limit = 5}) {
     return _history.take(limit).toList();
   }
 
-  /// Get recent workouts grouped by routineId + date
+  /// Get recent workouts grouped by routineId + date (only valid sessions)
   List<GroupedHistoryEntry> getGroupedRecentWorkouts({int limit = 5}) {
     final Map<String, GroupedHistoryEntry> groups = {};
 
-    for (final entry in _history) {
+    // Filter to only valid entries for display
+    // A session is valid if:
+    // 1. hasLoggedData = true (at least one set has reps > 0 OR weight > 0)
+    // 2. duration >= 5 minutes (time investment)
+    // NOTE: Exercise count alone does NOT qualify - actual effort required
+    final validEntries =
+        _history.where((e) => e.hasLoggedData || e.duration.inMinutes >= 5);
+
+    for (final entry in validEntries) {
       final dateKey = _dateKey(entry.completedAt);
       // Group key: routineId (or 'freestyle_<id>' for freestyle) + date
       final groupKey = '${entry.routineId ?? 'freestyle_${entry.id}'}_$dateKey';
