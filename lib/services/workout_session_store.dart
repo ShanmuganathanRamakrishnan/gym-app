@@ -132,6 +132,10 @@ class WorkoutSessionStore {
     final totalSets = completedSession.exercises.fold<int>(
         0, (sum, ex) => sum + ex.sets.where((s) => s.completed).length);
 
+    // Check if any set has actual logged data (reps > 0 OR weight > 0)
+    final hasLoggedData = completedSession.exercises.any((exercise) =>
+        exercise.sets.any((set) => set.reps > 0 || set.weight > 0));
+
     await _historyService.addEntry(WorkoutHistoryEntry(
       id: completedSession.id,
       routineId: completedSession.routineId,
@@ -140,6 +144,7 @@ class WorkoutSessionStore {
       duration: completedSession.totalDuration,
       exerciseCount: completedSession.exercises.length,
       totalSets: totalSets,
+      hasLoggedData: hasLoggedData,
     ));
 
     return completedSession;

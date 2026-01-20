@@ -13,6 +13,7 @@ class WorkoutHistoryEntry {
   final Duration duration;
   final int exerciseCount;
   final int totalSets;
+  final bool hasLoggedData; // True if any set has reps > 0 OR weight > 0
 
   const WorkoutHistoryEntry({
     required this.id,
@@ -22,6 +23,7 @@ class WorkoutHistoryEntry {
     required this.duration,
     required this.exerciseCount,
     required this.totalSets,
+    this.hasLoggedData = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -32,6 +34,7 @@ class WorkoutHistoryEntry {
         'durationSeconds': duration.inSeconds,
         'exerciseCount': exerciseCount,
         'totalSets': totalSets,
+        'hasLoggedData': hasLoggedData,
       };
 
   factory WorkoutHistoryEntry.fromJson(Map<String, dynamic> json) {
@@ -43,6 +46,7 @@ class WorkoutHistoryEntry {
       duration: Duration(seconds: json['durationSeconds'] as int),
       exerciseCount: json['exerciseCount'] as int,
       totalSets: json['totalSets'] as int,
+      hasLoggedData: json['hasLoggedData'] as bool? ?? false,
     );
   }
 }
@@ -123,8 +127,93 @@ class WorkoutHistoryService {
     await _saveToStorage();
   }
 
+  /// Clear all workout history (for debugging/reset)
+  Future<void> clearAllHistory() async {
+    _history.clear();
+    await _saveToStorage();
+  }
+
   /// Get recent workouts for display
   List<WorkoutHistoryEntry> getRecentWorkouts({int limit = 5}) {
     return _history.take(limit).toList();
   }
+
+  /// Get recent workouts grouped by routineId + date (only valid sessions)
+  List<GroupedHistoryEntry> getGroupedRecentWorkouts({int limit = 5}) {
+    final Map<String, GroupedHistoryEntry> groups = {};
+
+    // Filter to only valid entries for display
+    // A session is valid if:
+    // 1. hasLoggedData = true (at least one set has reps > 0 OR weight > 0)
+    // 2. duration >= 5 minutes (time investment)
+    // NOTE: Exercise count alone does NOT qualify - actual effort required
+    final validEntries =
+        _history.where((e) => e.hasLoggedData || e.duration.inMinutes >= 5);
+
+    for (final entry in validEntries) {
+      final dateKey = _dateKey(entry.completedAt);
+      // Group key: routineId (or 'freestyle_<id>' for freestyle) + date
+      final groupKey = '${entry.routineId ?? 'freestyle_${entry.id}'}_$dateKey';
+
+      if (groups.containsKey(groupKey)) {
+        groups[groupKey]!.addEntry(entry);
+      } else {
+        groups[groupKey] = GroupedHistoryEntry(
+          name: entry.name,
+          routineId: entry.routineId,
+          date: entry.completedAt,
+          entries: [entry],
+        );
+      }
+    }
+
+    // Sort by most recent date and take limit
+    final sorted = groups.values.toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+    return sorted.take(limit).toList();
+  }
+
+  /// Helper to get date key (YYYY-MM-DD)
+  String _dateKey(DateTime dt) =>
+      '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+}
+
+/// Grouped history entry (multiple sessions of same routine on same day)
+class GroupedHistoryEntry {
+  final String name;
+  final String? routineId;
+  final DateTime date;
+  final List<WorkoutHistoryEntry> entries;
+
+  GroupedHistoryEntry({
+    required this.name,
+    this.routineId,
+    required this.date,
+    required List<WorkoutHistoryEntry> entries,
+  }) : entries = List.from(entries);
+
+  void addEntry(WorkoutHistoryEntry entry) => entries.add(entry);
+
+  /// Number of sessions in this group
+  int get sessionCount => entries.length;
+
+  /// Whether this is a single session or grouped
+  bool get isGrouped => entries.length > 1;
+
+  /// Whether this is a freestyle workout
+  bool get isFreestyle => routineId == null;
+
+  /// Total duration across all sessions
+  Duration get totalDuration =>
+      entries.fold(Duration.zero, (sum, e) => sum + e.duration);
+
+  /// Total exercises across all sessions
+  int get totalExercises => entries.fold(0, (sum, e) => sum + e.exerciseCount);
+
+  /// Total sets across all sessions
+  int get totalSets => entries.fold(0, (sum, e) => sum + e.totalSets);
+
+  /// Most recent completion time
+  DateTime get latestCompletedAt =>
+      entries.map((e) => e.completedAt).reduce((a, b) => a.isAfter(b) ? a : b);
 }

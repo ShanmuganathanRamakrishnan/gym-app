@@ -444,6 +444,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     if (mounted) setState(() {});
 
     if (deletedRoutine != null && mounted) {
+      // Clear any existing snackbars to prevent stacking
+      messenger.clearSnackBars();
+
       messenger.showSnackBar(
         SnackBar(
           content: Row(
@@ -459,7 +462,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
               TextButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  // Use pre-captured messenger, not context (may be stale)
+                  messenger.hideCurrentSnackBar();
                   _store.restoreRoutine(deletedRoutine, index);
                   if (mounted) setState(() {});
                 },

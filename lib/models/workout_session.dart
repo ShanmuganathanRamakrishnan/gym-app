@@ -161,6 +161,23 @@ class WorkoutSession {
   int get totalSetsCompleted =>
       exercises.fold(0, (sum, e) => sum + e.completedSetsCount);
 
+  /// Determine if this session is valid for saving to history.
+  /// A session is valid if ANY of the following are true:
+  /// 1. At least 1 completed set with reps > 0 OR weight > 0
+  /// 2. Total workout duration >= 5 minutes
+  /// NOTE: Exercise count alone does NOT qualify - actual effort required
+  bool get isValidSession {
+    // Rule 1: At least 1 completed set with logged data
+    final hasLoggedSet = exercises.any((exercise) => exercise.sets
+        .any((set) => set.completed && (set.reps > 0 || set.weight > 0)));
+    if (hasLoggedSet) return true;
+
+    // Rule 2: Duration >= 5 minutes
+    if (totalDuration.inMinutes >= 5) return true;
+
+    return false;
+  }
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'routineId': routineId,

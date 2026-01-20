@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'community_post_sheet.dart';
 import 'screens/active_workout_screen.dart';
+import 'screens/recent_workout_summary_modal.dart';
 import 'services/suggested_workout_service.dart';
 import 'services/user_preferences.dart';
 import 'services/workout_history_service.dart';
@@ -86,7 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final community = sampleHomeData['community'] as List<dynamic>;
-    final recent = sampleHomeData['recentWorkouts'] as List<dynamic>;
 
     if (_loading) {
       return const Scaffold(
@@ -127,8 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // 5) RECENT WORKOUTS SECTION
               _buildSectionTitle(context, 'Recent Workouts'),
               const SizedBox(height: 12),
-              ...recent.map(
-                  (w) => _buildRecentItem(context, w as Map<String, dynamic>)),
+              _buildRecentWorkouts(),
               const SizedBox(height: 16),
             ],
           ),
@@ -342,75 +341,174 @@ class _HomeScreenState extends State<HomeScreen> {
   // ─────────────────────────────────────────────────────────────────────────
   // 6) RECENT WORKOUTS
   // ─────────────────────────────────────────────────────────────────────────
-  Widget _buildRecentItem(BuildContext context, Map<String, dynamic> workout) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border:
-            Border.all(color: AppColors.surfaceLight.withValues(alpha: 0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: AppColors.accentDim,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.fitness_center,
-                color: AppColors.accent, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  workout['title'] as String,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  workout['date'] as String,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
+  /// Build the Recent Workouts section from real history data (grouped)
+  Widget _buildRecentWorkouts() {
+    final groupedEntries = _historyService.getGroupedRecentWorkouts(limit: 5);
+
+    // Empty state
+    if (groupedEntries.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border:
+              Border.all(color: AppColors.surfaceLight.withValues(alpha: 0.5)),
+        ),
+        child: const Center(
+          child: Text(
+            'No workouts logged yet',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
-              borderRadius: BorderRadius.circular(8),
+        ),
+      );
+    }
+
+    return Column(
+      children: groupedEntries
+          .map((group) => _buildRecentWorkoutCard(group))
+          .toList(),
+    );
+  }
+
+  /// Format relative date (Today, Yesterday, N days ago)
+  String _formatRelativeDate(DateTime completedAt) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final completedDate =
+        DateTime(completedAt.year, completedAt.month, completedAt.day);
+    final difference = today.difference(completedDate).inDays;
+
+    if (difference == 0) return 'Today';
+    if (difference == 1) return 'Yesterday';
+    return '$difference days ago';
+  }
+
+  /// Build a recent workout card from grouped history entry
+  Widget _buildRecentWorkoutCard(GroupedHistoryEntry group) {
+    final isFreestyle = group.isFreestyle;
+    final durationMinutes = group.totalDuration.inMinutes;
+
+    // Display text with count if grouped
+    final nameDisplay =
+        group.isGrouped ? '${group.name} ×${group.sessionCount}' : group.name;
+
+    // Subtitle shows aggregate info for grouped
+    final subtitle = group.isGrouped
+        ? '${group.sessionCount} sessions • $durationMinutes min total'
+        : null;
+
+    return GestureDetector(
+      onTap: () => RecentWorkoutSummaryModal.show(context, group),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border:
+              Border.all(color: AppColors.surfaceLight.withValues(alpha: 0.5)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Text(
-              workout['duration'] as String,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color:
+                    isFreestyle ? AppColors.surfaceLight : AppColors.accentDim,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                isFreestyle ? Icons.flash_on : Icons.fitness_center,
+                color: isFreestyle ? AppColors.textSecondary : AppColors.accent,
+                size: 22,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nameDisplay,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        _formatRelativeDate(group.date),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                      if (isFreestyle) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceLight,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'Freestyle',
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLight,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '$durationMinutes min',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

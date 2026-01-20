@@ -31,6 +31,11 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   Duration _elapsed = Duration.zero;
   bool _loading = true;
 
+  // Global rest timer state using ValueNotifier (isolated from parent rebuilds)
+  Timer? _restTimer;
+  final ValueNotifier<int> _restSecondsRemaining = ValueNotifier<int>(0);
+  int _restSecondsTotal = 0;
+
   @override
   void initState() {
     super.initState();
@@ -40,7 +45,46 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _restTimer?.cancel();
+    _restSecondsRemaining.dispose();
     super.dispose();
+  }
+
+  /// Start global rest timer with specified duration
+  void _startGlobalRestTimer(int seconds) {
+    _restTimer?.cancel();
+    _restSecondsTotal = seconds;
+    _restSecondsRemaining.value = seconds;
+    _restTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_restSecondsRemaining.value > 0) {
+        _restSecondsRemaining.value--;
+      } else {
+        _restTimer?.cancel();
+      }
+    });
+  }
+
+  void _skipGlobalRest() {
+    _restTimer?.cancel();
+    _restSecondsRemaining.value = 0;
+  }
+
+  void _resetGlobalRest() {
+    _restTimer?.cancel();
+    _restSecondsRemaining.value = _restSecondsTotal;
+    _restTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_restSecondsRemaining.value > 0) {
+        _restSecondsRemaining.value--;
+      } else {
+        _restTimer?.cancel();
+      }
+    });
+  }
+
+  String _formatRestTime(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
   Future<void> _initSession() async {
@@ -223,21 +267,27 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // Header
-            _buildHeader(session),
+            // Main content
+            Column(
+              children: [
+                // Header
+                _buildHeader(session),
 
-            // Exercise List
-            Expanded(
-              child: session.exercises.isEmpty
-                  ? _buildEmptyState()
-                  : _buildExerciseList(session),
+                // Exercise List (includes inline buttons at bottom)
+                Expanded(
+                  child: session.exercises.isEmpty
+                      ? _buildEmptyState()
+                      : _buildExerciseList(session),
+                ),
+              ],
             ),
 
-            // Bottom Controls
-            _buildBottomControls(session),
+            // Rest timer overlay (slides up from bottom)
+            _buildRestTimerOverlay(),
           ],
         ),
       ),
@@ -373,10 +423,44 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   }
 
   Widget _buildExerciseList(WorkoutSession session) {
+    // Extra items: Add Exercise button, optional rest timer, action buttons, bottom padding
+    final extraItemCount = 3; // add button + action buttons + padding
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: session.exercises.length + 1, // +1 for add button
+      itemCount: session.exercises.length + extraItemCount,
       itemBuilder: (context, index) {
+        // Exercise cards
+        if (index < session.exercises.length) {
+          return _ExerciseCard(
+            exercise: session.exercises[index],
+            onSetUpdated: (setIndex, reps, weight, completed) async {
+              await _store.updateSet(
+                exerciseId: session.exercises[index].id,
+                setIndex: setIndex,
+                reps: reps,
+                weight: weight,
+                completed: completed,
+              );
+              setState(() {});
+            },
+            onAddSet: () async {
+              await _store.addSet(session.exercises[index].id);
+              setState(() {});
+            },
+            onSkip: () async {
+              await _store.skipExercise(session.exercises[index].id);
+              setState(() {});
+            },
+            onRemove: () async {
+              await _store.removeExercise(session.exercises[index].id);
+              setState(() {});
+            },
+            onRestTimerStart: _startGlobalRestTimer,
+          );
+        }
+
+        // Add Exercise button
         if (index == session.exercises.length) {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -395,85 +479,160 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
           );
         }
 
-        return _ExerciseCard(
-          exercise: session.exercises[index],
-          onSetUpdated: (setIndex, reps, weight, completed) async {
-            await _store.updateSet(
-              exerciseId: session.exercises[index].id,
-              setIndex: setIndex,
-              reps: reps,
-              weight: weight,
-              completed: completed,
-            );
-            setState(() {});
-          },
-          onAddSet: () async {
-            await _store.addSet(session.exercises[index].id);
-            setState(() {});
-          },
-          onSkip: () async {
-            await _store.skipExercise(session.exercises[index].id);
-            setState(() {});
-          },
-          onRemove: () async {
-            await _store.removeExercise(session.exercises[index].id);
-            setState(() {});
-          },
-        );
+        // Action buttons (Pause + End Workout) - inline row
+        if (index == session.exercises.length + 1) {
+          return Row(
+            children: [
+              // Pause/Resume (secondary)
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _togglePause,
+                  icon: Icon(
+                    session.isPaused ? Icons.play_arrow : Icons.pause,
+                    size: 18,
+                  ),
+                  label: Text(session.isPaused ? 'Resume' : 'Pause'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textPrimary,
+                    side: const BorderSide(color: AppColors.surfaceLight),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // End Workout (primary)
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: _showEndWorkoutDialog,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'End Workout',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        // Bottom padding
+        return const SizedBox(height: 32);
       },
     );
   }
 
-  Widget _buildBottomControls(WorkoutSession session) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.surfaceLight)),
-      ),
-      child: Row(
-        children: [
-          // Pause/Resume
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _togglePause,
-              icon: Icon(
-                session.isPaused ? Icons.play_arrow : Icons.pause,
-                size: 22,
+  /// Build global rest timer bar as animated bottom overlay
+  Widget _buildRestTimerOverlay() {
+    return ValueListenableBuilder<int>(
+      valueListenable: _restSecondsRemaining,
+      builder: (context, seconds, _) {
+        if (seconds <= 0) {
+          return const SizedBox.shrink();
+        }
+        return Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Material(
+            elevation: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
+                border: Border(
+                  top: BorderSide(
+                      color: AppColors.accent.withValues(alpha: 0.5), width: 2),
+                ),
               ),
-              label: Text(session.isPaused ? 'Resume' : 'Pause'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.textPrimary,
-                side: const BorderSide(color: AppColors.surfaceLight),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  children: [
+                    // REST label
+                    const Text(
+                      'REST',
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
 
-          // End Workout
-          Expanded(
-            flex: 2,
-            child: ElevatedButton(
-              onPressed: _showEndWorkoutDialog,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
-              ),
-              child: const Text(
-                'End Workout',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    // Timer countdown
+                    Text(
+                      _formatRestTime(seconds),
+                      style: const TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const Spacer(),
+
+                    // Restart button
+                    GestureDetector(
+                      onTap: _resetGlobalRest,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceLight,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Restart',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    // Skip button
+                    GestureDetector(
+                      onTap: _skipGlobalRest,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Skip',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -489,6 +648,8 @@ class _ExerciseCard extends StatelessWidget {
   final VoidCallback onAddSet;
   final VoidCallback onSkip;
   final VoidCallback onRemove;
+  final Function(int)?
+      onRestTimerStart; // Callback to trigger global rest timer
 
   const _ExerciseCard({
     required this.exercise,
@@ -496,6 +657,7 @@ class _ExerciseCard extends StatelessWidget {
     required this.onAddSet,
     required this.onSkip,
     required this.onRemove,
+    this.onRestTimerStart,
   });
 
   @override
@@ -611,28 +773,16 @@ class _ExerciseCard extends StatelessWidget {
               final index = entry.key;
               final set = entry.value;
               return _SetRow(
+                key: ValueKey('${exercise.id}_$index'),
                 set: set,
                 restSeconds: exercise.restSeconds,
                 onRepsChanged: (reps) => onSetUpdated(index, reps, null, null),
                 onWeightChanged: (weight) =>
                     onSetUpdated(index, null, weight, null),
                 onCompletedChanged: (completed) {
-                  // Validate: require reps OR weight before marking complete
-                  if (completed && set.reps == 0 && set.weight == 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Please log reps or weight for this set before marking it complete.',
-                        ),
-                        backgroundColor: AppColors.surface,
-                        behavior: SnackBarBehavior.floating,
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                    return; // Block completion
-                  }
                   onSetUpdated(index, null, null, completed);
                 },
+                onRestTimerStart: onRestTimerStart,
               );
             }),
 
@@ -676,13 +826,17 @@ class _SetRow extends StatefulWidget {
   final Function(int) onRepsChanged;
   final Function(double) onWeightChanged;
   final Function(bool) onCompletedChanged;
+  final Function(int)?
+      onRestTimerStart; // Callback to trigger global rest timer
 
   const _SetRow({
+    super.key,
     required this.set,
     required this.restSeconds,
     required this.onRepsChanged,
     required this.onWeightChanged,
     required this.onCompletedChanged,
+    this.onRestTimerStart,
   });
 
   @override
@@ -690,36 +844,6 @@ class _SetRow extends StatefulWidget {
 }
 
 class _SetRowState extends State<_SetRow> {
-  Timer? _restTimer;
-  int _restSeconds = 0;
-
-  @override
-  void dispose() {
-    _restTimer?.cancel();
-    super.dispose();
-  }
-
-  void _startRestTimer() {
-    _restTimer?.cancel();
-    setState(() => _restSeconds = widget.restSeconds);
-    _restTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_restSeconds > 0) {
-        setState(() => _restSeconds--);
-      } else {
-        _restTimer?.cancel();
-      }
-    });
-  }
-
-  void _skipRest() {
-    _restTimer?.cancel();
-    setState(() => _restSeconds = 0);
-  }
-
-  void _resetRest() {
-    setState(() => _restSeconds = widget.restSeconds);
-  }
-
   void _showNumberInput(BuildContext context, String label, num currentValue,
       bool isDecimal, Function(num) onChanged) {
     final controller = TextEditingController(
@@ -774,194 +898,127 @@ class _SetRowState extends State<_SetRow> {
     );
   }
 
-  String _formatRestTime(int seconds) {
-    final m = seconds ~/ 60;
-    final s = seconds % 60;
-    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final showRestTimer = _restSeconds > 0;
-
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: widget.set.completed
-                ? AppColors.accentDim.withValues(alpha: 0.3)
-                : Colors.transparent,
-            border: showRestTimer
-                ? Border.all(
-                    color: AppColors.accent.withValues(alpha: 0.5), width: 2)
-                : null,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              // Set number
-              SizedBox(
-                width: 36,
-                child: Text(
-                  '${widget.set.setNumber}',
-                  style: TextStyle(
-                    color: widget.set.completed
-                        ? AppColors.accent
-                        : AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: widget.set.completed
+            ? AppColors.accentDim.withValues(alpha: 0.3)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          // Set number
+          SizedBox(
+            width: 36,
+            child: Text(
+              '${widget.set.setNumber}',
+              style: TextStyle(
+                color: widget.set.completed
+                    ? AppColors.accent
+                    : AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
-
-              // Weight
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => _showNumberInput(
-                      context,
-                      'Weight (kg)',
-                      widget.set.weight,
-                      true,
-                      (v) => widget.onWeightChanged(v.toDouble())),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceLight,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        widget.set.weight > 0 ? '${widget.set.weight} kg' : '-',
-                        style: TextStyle(
-                          color: widget.set.weight > 0
-                              ? AppColors.textPrimary
-                              : AppColors.textMuted,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Reps
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => _showNumberInput(
-                      context,
-                      'Reps',
-                      widget.set.reps,
-                      false,
-                      (v) => widget.onRepsChanged(v.toInt())),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceLight,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        widget.set.reps > 0 ? '${widget.set.reps}' : '-',
-                        style: TextStyle(
-                          color: widget.set.reps > 0
-                              ? AppColors.textPrimary
-                              : AppColors.textMuted,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Complete checkbox
-              GestureDetector(
-                onTap: () {
-                  final newCompleted = !widget.set.completed;
-                  widget.onCompletedChanged(newCompleted);
-                  if (newCompleted) {
-                    _startRestTimer();
-                  } else {
-                    _skipRest();
-                  }
-                },
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: widget.set.completed
-                        ? AppColors.accent
-                        : AppColors.surfaceLight,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    widget.set.completed ? Icons.check : Icons.circle_outlined,
-                    color: widget.set.completed
-                        ? Colors.white
-                        : AppColors.textMuted,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Rest timer indicator
-        if (showRestTimer)
-          Container(
-            margin: const EdgeInsets.only(top: 6, bottom: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.accentDim,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.timer_outlined,
-                    size: 16, color: AppColors.accent),
-                const SizedBox(width: 6),
-                Text(
-                  'Rest: ${_formatRestTime(_restSeconds)}',
-                  style: const TextStyle(
-                    color: AppColors.accent,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: _skipRest,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      'Skip',
-                      style: TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                GestureDetector(
-                  onTap: _resetRest,
-                  child: const Icon(Icons.refresh,
-                      size: 18, color: AppColors.textMuted),
-                ),
-              ],
             ),
           ),
-      ],
+
+          // Weight
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _showNumberInput(
+                  context,
+                  'Weight (kg)',
+                  widget.set.weight,
+                  true,
+                  (v) => widget.onWeightChanged(v.toDouble())),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    widget.set.weight > 0 ? '${widget.set.weight} kg' : '-',
+                    style: TextStyle(
+                      color: widget.set.weight > 0
+                          ? AppColors.textPrimary
+                          : AppColors.textMuted,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Reps
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _showNumberInput(context, 'Reps', widget.set.reps,
+                  false, (v) => widget.onRepsChanged(v.toInt())),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    widget.set.reps > 0 ? '${widget.set.reps}' : '-',
+                    style: TextStyle(
+                      color: widget.set.reps > 0
+                          ? AppColors.textPrimary
+                          : AppColors.textMuted,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Complete checkbox
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              // Prevent IME/focus issues by unfocusing any active input
+              FocusScope.of(context).unfocus();
+
+              final newCompleted = !widget.set.completed;
+              widget.onCompletedChanged(newCompleted);
+
+              // Trigger global rest timer if completing set
+              if (newCompleted && widget.onRestTimerStart != null) {
+                widget.onRestTimerStart!(widget.restSeconds);
+              }
+            },
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: widget.set.completed
+                    ? AppColors.accent
+                    : AppColors.surfaceLight,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                widget.set.completed ? Icons.check : Icons.circle_outlined,
+                color:
+                    widget.set.completed ? Colors.white : AppColors.textMuted,
+                size: 24,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
