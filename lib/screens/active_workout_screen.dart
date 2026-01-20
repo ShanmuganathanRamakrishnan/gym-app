@@ -223,6 +223,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [
@@ -611,26 +612,28 @@ class _ExerciseCard extends StatelessWidget {
               final index = entry.key;
               final set = entry.value;
               return _SetRow(
+                key: ValueKey('${exercise.id}_$index'),
                 set: set,
                 restSeconds: exercise.restSeconds,
                 onRepsChanged: (reps) => onSetUpdated(index, reps, null, null),
                 onWeightChanged: (weight) =>
                     onSetUpdated(index, null, weight, null),
                 onCompletedChanged: (completed) {
+                  // DEBUG: Snackbar disabled for testing
                   // Validate: require reps OR weight before marking complete
-                  if (completed && set.reps == 0 && set.weight == 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Please log reps or weight for this set before marking it complete.',
-                        ),
-                        backgroundColor: AppColors.surface,
-                        behavior: SnackBarBehavior.floating,
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                    return; // Block completion
-                  }
+                  // if (completed && set.reps == 0 && set.weight == 0) {
+                  //   ScaffoldMessenger.of(context).showSnackBar(
+                  //     const SnackBar(
+                  //       content: Text(
+                  //         'Please log reps or weight for this set before marking it complete.',
+                  //       ),
+                  //       backgroundColor: AppColors.surface,
+                  //       behavior: SnackBarBehavior.floating,
+                  //       duration: Duration(seconds: 2),
+                  //     ),
+                  //   );
+                  //   return; // Block completion
+                  // }
                   onSetUpdated(index, null, null, completed);
                 },
               );
@@ -678,6 +681,7 @@ class _SetRow extends StatefulWidget {
   final Function(bool) onCompletedChanged;
 
   const _SetRow({
+    super.key,
     required this.set,
     required this.restSeconds,
     required this.onRepsChanged,
@@ -881,7 +885,11 @@ class _SetRowState extends State<_SetRow> {
 
               // Complete checkbox
               GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () {
+                  // Prevent IME/focus issues by unfocusing any active input
+                  FocusScope.of(context).unfocus();
+
                   final newCompleted = !widget.set.completed;
                   widget.onCompletedChanged(newCompleted);
                   if (newCompleted) {
