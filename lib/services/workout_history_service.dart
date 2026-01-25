@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/workout_session.dart';
 
 const String _kHistoryKey = 'gym_app_workout_history';
+const String _kSessionsKey = 'gym_app_workout_sessions';
 const int _kMaxHistoryItems = 50;
 
 /// Lightweight history entry for completed workouts
@@ -59,6 +61,7 @@ class WorkoutHistoryService {
   WorkoutHistoryService._internal();
 
   List<WorkoutHistoryEntry> _history = [];
+  final Map<String, WorkoutSession> _sessions = {};
   bool _initialized = false;
 
   /// Get all history entries (newest first)
@@ -89,6 +92,8 @@ class WorkoutHistoryService {
 
     try {
       final prefs = await SharedPreferences.getInstance();
+
+      // Load history summaries
       final jsonString = prefs.getString(_kHistoryKey);
       if (jsonString != null && jsonString.isNotEmpty) {
         final List<dynamic> jsonList = jsonDecode(jsonString);
@@ -96,8 +101,25 @@ class WorkoutHistoryService {
             .map((e) => WorkoutHistoryEntry.fromJson(e as Map<String, dynamic>))
             .toList();
       }
+
+      // Load detailed sessions
+      final sessionsJson = prefs.getString(_kSessionsKey);
+      if (sessionsJson != null && sessionsJson.isNotEmpty) {
+        final List<dynamic> jsonList = jsonDecode(sessionsJson);
+        for (final json in jsonList) {
+          try {
+            final session =
+                WorkoutSession.fromJson(json as Map<String, dynamic>);
+            _sessions[session.id] = session;
+          } catch (e) {
+            // Skip corrupted sessions
+          }
+        }
+      }
     } catch (e) {
+      // Initialize with empty defaults on error
       _history = [];
+      _sessions.clear();
     }
 
     _initialized = true;
@@ -107,8 +129,16 @@ class WorkoutHistoryService {
   Future<void> _saveToStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final jsonString = jsonEncode(_history.map((e) => e.toJson()).toList());
-      await prefs.setString(_kHistoryKey, jsonString);
+
+      // Save summaries
+      final historyJson = jsonEncode(_history.map((e) => e.toJson()).toList());
+      await prefs.setString(_kHistoryKey, historyJson);
+
+      // Save detailed sessions
+      // Note: In a real app with large data, this should be a DB or file-per-session
+      final sessionsList = _sessions.values.map((s) => s.toJson()).toList();
+      final sessionsJson = jsonEncode(sessionsList);
+      await prefs.setString(_kSessionsKey, sessionsJson);
     } catch (e) {
       // Silently fail
     }
@@ -121,6 +151,10 @@ class WorkoutHistoryService {
 
     // Trim to max size
     if (_history.length > _kMaxHistoryItems) {
+      // Remove detailed session for the item being dropped
+      final removedEntry = _history.last;
+      _sessions.remove(removedEntry.id);
+
       _history = _history.sublist(0, _kMaxHistoryItems);
     }
 
@@ -130,7 +164,19 @@ class WorkoutHistoryService {
   /// Clear all workout history (for debugging/reset)
   Future<void> clearAllHistory() async {
     _history.clear();
+    _sessions.clear();
     await _saveToStorage();
+  }
+
+  /// Save a full workout session
+  Future<void> saveSession(WorkoutSession session) async {
+    _sessions[session.id] = session;
+    await _saveToStorage();
+  }
+
+  /// Get a detailed session by ID
+  WorkoutSession? getDetailedSession(String id) {
+    return _sessions[id];
   }
 
   /// Get recent workouts for display

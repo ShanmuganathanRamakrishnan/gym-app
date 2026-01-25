@@ -125,10 +125,28 @@ class WorkoutSessionStore {
     _activeSession!.pauseStartTime = null;
 
     final completedSession = _activeSession!;
+
+    // Strict Validation (Single-Source Guardrails)
+    // Rule 1: At least 1 completed set with reps > 0
+    final hasValidSet = completedSession.exercises.any((exercise) =>
+        exercise.sets.any((set) => set.completed && set.reps > 0));
+
+    // Rule 2: Minimum duration 1 minute
+    final hasMinDuration = completedSession.totalDuration.inMinutes >= 1;
+
+    // Logic: AND (All rules must pass)
+    final isValid = hasValidSet && hasMinDuration;
+
+    if (!isValid) {
+      await _clearActiveSession();
+      _activeSession = null;
+      return completedSession; // Discarded: Never saved to history
+    }
+
     await _clearActiveSession();
     _activeSession = null;
 
-    // Save to history
+    // Save to history (Summary)
     final totalSets = completedSession.exercises.fold<int>(
         0, (sum, ex) => sum + ex.sets.where((s) => s.completed).length);
 
@@ -146,6 +164,9 @@ class WorkoutSessionStore {
       totalSets: totalSets,
       hasLoggedData: hasLoggedData,
     ));
+
+    // Save to detailed storage (Full Session)
+    await _historyService.saveSession(completedSession);
 
     return completedSession;
   }
