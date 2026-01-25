@@ -55,10 +55,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: GymTheme.colors.background,
       appBar: AppBar(
-        backgroundColor: GymTheme.colors
-            .surface, // Profile has varied header color in original? Keeping surface for consistency or background?
-        // Original was 1E1E1E (surface) while scaffolding was 121212.
-        // Let's align with GymTheme.
+        backgroundColor:
+            GymTheme.colors.background, // Match scaffold background
         elevation: 0,
         title: Text(
           'Profile',

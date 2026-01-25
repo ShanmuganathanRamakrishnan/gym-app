@@ -158,7 +158,8 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: GymTheme.spacing.md),
-      padding: EdgeInsets.all(GymTheme.spacing.md),
+      padding: EdgeInsets.symmetric(
+          horizontal: GymTheme.spacing.md, vertical: GymTheme.spacing.md),
       decoration: BoxDecoration(
         color: GymTheme.colors.surface,
         borderRadius: BorderRadius.circular(GymTheme.radius.card),
@@ -243,7 +244,7 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
 
           // Graph area with bars
           SizedBox(
-            height: 100,
+            height: 200, // Increased from 100 for better visibility
             child: hasAnyData ? _buildGraph(days) : _buildEmptyState(),
           ),
         ],
