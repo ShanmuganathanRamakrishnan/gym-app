@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'profile_header.dart' show ProfileColors;
+import '../theme/gym_theme.dart';
 
 /// Stats row with selectable chips (Duration | Volume | Reps)
 class ProfileStatsRow extends StatelessWidget {
@@ -21,11 +21,11 @@ class ProfileStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(horizontal: GymTheme.spacing.md),
+      padding: EdgeInsets.all(GymTheme.spacing.md),
       decoration: BoxDecoration(
-        color: ProfileColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: GymTheme.colors.surface,
+        borderRadius: BorderRadius.circular(GymTheme.radius.lg),
       ),
       child: Column(
         children: [
@@ -33,18 +33,18 @@ class ProfileStatsRow extends StatelessWidget {
           Container(
             height: 80,
             decoration: BoxDecoration(
-              color: ProfileColors.surfaceLight,
-              borderRadius: BorderRadius.circular(8),
+              color: GymTheme.colors.surfaceElevated,
+              borderRadius: BorderRadius.circular(GymTheme.radius.sm),
             ),
-            child: const Center(
+            child: Center(
               child: Icon(
                 Icons.show_chart,
                 size: 32,
-                color: ProfileColors.textMuted,
+                color: GymTheme.colors.textMuted,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: GymTheme.spacing.md),
 
           // Chips
           Row(
@@ -65,9 +65,12 @@ class ProfileStatsRow extends StatelessWidget {
     return GestureDetector(
       onTap: () => onChipSelected?.call(index),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(
+            horizontal: GymTheme.spacing.md, vertical: GymTheme.spacing.sm),
         decoration: BoxDecoration(
-          color: isSelected ? ProfileColors.accent : ProfileColors.surfaceLight,
+          color: isSelected
+              ? GymTheme.colors.accent
+              : GymTheme.colors.surfaceElevated,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -75,7 +78,7 @@ class ProfileStatsRow extends StatelessWidget {
             Text(
               value,
               style: TextStyle(
-                color: isSelected ? Colors.white : ProfileColors.textPrimary,
+                color: isSelected ? Colors.white : GymTheme.colors.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
@@ -86,7 +89,7 @@ class ProfileStatsRow extends StatelessWidget {
               style: TextStyle(
                 color: isSelected
                     ? Colors.white.withValues(alpha: 0.8)
-                    : ProfileColors.textMuted,
+                    : GymTheme.colors.textMuted,
                 fontSize: 10,
               ),
             ),

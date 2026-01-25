@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/gym_theme.dart';
 
 class WeekNavigator extends StatelessWidget {
   final DateTime currentWeekStart;
@@ -33,23 +34,23 @@ class WeekNavigator extends StatelessWidget {
       children: [
         IconButton(
           onPressed: onPreviousTap,
-          icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
+          icon: Icon(Icons.chevron_left,
+              color: GymTheme.colors.textPrimary, size: 28),
           splashRadius: 24,
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: GymTheme.spacing.sm),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: GymTheme.text.sectionTitle.copyWith(fontSize: 16),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: GymTheme.spacing.sm),
         IconButton(
           onPressed: canGoNext ? onNextTap : null,
           icon: Icon(Icons.chevron_right,
-              color: canGoNext ? Colors.white : Colors.white24, size: 28),
+              color: canGoNext
+                  ? GymTheme.colors.textPrimary
+                  : GymTheme.colors.textMuted,
+              size: 28),
           splashRadius: 24,
         ),
       ],

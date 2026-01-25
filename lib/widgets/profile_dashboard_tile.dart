@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'profile_header.dart' show ProfileColors;
+import '../theme/gym_theme.dart';
 
 /// Compact dashboard tile for profile (Statistics, Achievements, Measures, Calendar)
 class ProfileDashboardTile extends StatelessWidget {
@@ -20,10 +20,11 @@ class ProfileDashboardTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 64,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding:
+            EdgeInsets.symmetric(horizontal: GymTheme.spacing.md, vertical: 10),
         decoration: BoxDecoration(
-          color: ProfileColors.surface,
-          borderRadius: BorderRadius.circular(12),
+          color: GymTheme.colors.surface,
+          borderRadius: BorderRadius.circular(GymTheme.radius.card),
         ),
         child: Row(
           children: [
@@ -31,23 +32,19 @@ class ProfileDashboardTile extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: ProfileColors.accent.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
+                color: GymTheme.colors.accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(GymTheme.radius.sm),
               ),
               child: Icon(
                 icon,
-                color: ProfileColors.accent,
+                color: GymTheme.colors.accent,
                 size: 18,
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: GymTheme.spacing.sm),
             Text(
               title,
-              style: const TextStyle(
-                color: ProfileColors.textPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+              style: GymTheme.text.cardTitle.copyWith(fontSize: 13),
             ),
           ],
         ),
@@ -68,10 +65,11 @@ class _AchievementsTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 64,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding:
+            EdgeInsets.symmetric(horizontal: GymTheme.spacing.md, vertical: 10),
         decoration: BoxDecoration(
-          color: ProfileColors.surface,
-          borderRadius: BorderRadius.circular(12),
+          color: GymTheme.colors.surface,
+          borderRadius: BorderRadius.circular(GymTheme.radius.card),
         ),
         child: Row(
           children: [
@@ -79,40 +77,33 @@ class _AchievementsTile extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: ProfileColors.accent.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
+                color: GymTheme.colors.accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(GymTheme.radius.sm),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.emoji_events_outlined,
-                color: ProfileColors.accent,
+                color: GymTheme.colors.accent,
                 size: 18,
               ),
             ),
-            const SizedBox(width: 10),
-            const Expanded(
+            SizedBox(width: GymTheme.spacing.sm),
+            Expanded(
               child: Text(
                 'Achievements',
-                style: TextStyle(
-                  color: ProfileColors.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: GymTheme.text.cardTitle.copyWith(fontSize: 13),
               ),
             ),
             // "Soon" badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: ProfileColors.surfaceLight,
+                color: GymTheme.colors.surfaceElevated,
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Text(
+              child: Text(
                 'Soon',
-                style: TextStyle(
-                  color: ProfileColors.textMuted,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: GymTheme.text.secondary
+                    .copyWith(fontSize: 9, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -140,7 +131,8 @@ class ProfileDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      // Padding handled by parent generally, but enforcing horizontal here if needed
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           Row(
@@ -152,7 +144,7 @@ class ProfileDashboard extends StatelessWidget {
                   onTap: onStatisticsTap,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: GymTheme.spacing.md),
               Expanded(
                 child: _AchievementsTile(
                   onTap: onAchievementsTap,
@@ -160,7 +152,7 @@ class ProfileDashboard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: GymTheme.spacing.md),
           Row(
             children: [
               Expanded(
@@ -170,7 +162,7 @@ class ProfileDashboard extends StatelessWidget {
                   onTap: onMeasuresTap,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: GymTheme.spacing.md),
               Expanded(
                 child: ProfileDashboardTile(
                   icon: Icons.calendar_today,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/gym_theme.dart';
 
 class StatSummaryCards extends StatelessWidget {
   final int workouts;
@@ -26,9 +27,9 @@ class StatSummaryCards extends StatelessWidget {
         Expanded(
             child:
                 _buildCard('Workouts', workouts, prevWorkouts, isCount: true)),
-        const SizedBox(width: 8),
+        SizedBox(width: GymTheme.spacing.md),
         Expanded(child: _buildCard('Sets', sets, prevSets, isCount: true)),
-        const SizedBox(width: 8),
+        SizedBox(width: GymTheme.spacing.md),
         Expanded(
             child: _buildCard('Duration', durationMinutes, prevDuration,
                 unit: 'm', isCount: false)),
@@ -44,10 +45,11 @@ class StatSummaryCards extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      padding:
+          EdgeInsets.symmetric(vertical: 12, horizontal: GymTheme.spacing.sm),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(8),
+        color: GymTheme.colors.surface,
+        borderRadius: BorderRadius.circular(GymTheme.radius.card),
       ),
       child: Column(
         children: [
@@ -56,8 +58,7 @@ class StatSummaryCards extends StatelessWidget {
             children: [
               Text(
                 value.toString(),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: GymTheme.text.headline.copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -67,21 +68,15 @@ class StatSummaryCards extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 2, top: 4),
                   child: Text(
                     unit,
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 12,
-                    ),
+                    style: GymTheme.text.secondary.copyWith(fontSize: 12),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: GymTheme.spacing.xs),
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white54,
-              fontSize: 10,
-            ),
+            style: GymTheme.text.secondary.copyWith(fontSize: 10),
           ),
           if (deltaPct != null)
             Padding(

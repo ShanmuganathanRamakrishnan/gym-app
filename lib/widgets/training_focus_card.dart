@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'profile_header.dart' show ProfileColors;
+import '../theme/gym_theme.dart';
 
 /// Training Focus card showing primary muscle group
 class TrainingFocusCard extends StatelessWidget {
@@ -17,11 +17,11 @@ class TrainingFocusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(horizontal: GymTheme.spacing.md),
+      padding: EdgeInsets.all(GymTheme.spacing.md),
       decoration: BoxDecoration(
-        color: ProfileColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: GymTheme.colors.surface,
+        borderRadius: BorderRadius.circular(GymTheme.radius.card),
       ),
       child: Row(
         children: [
@@ -30,55 +30,49 @@ class TrainingFocusCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: ProfileColors.accent.withValues(alpha: 0.15),
+              color: GymTheme.colors.accent.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.track_changes,
-              color: ProfileColors.accent,
+              color: GymTheme.colors.accent,
               size: 24,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: GymTheme.spacing.md),
 
           // Content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Training Focus',
-                  style: TextStyle(
-                    color: ProfileColors.textMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: GymTheme.text.secondary
+                      .copyWith(fontWeight: FontWeight.w500),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: GymTheme.spacing.xs),
                 if (hasEnoughData && primaryMuscle != null)
                   Row(
                     children: [
                       Text(
                         primaryMuscle!,
-                        style: const TextStyle(
-                          color: ProfileColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: GymTheme.text.cardTitle,
                       ),
                       if (percentage != null) ...[
-                        const SizedBox(width: 8),
+                        SizedBox(width: GymTheme.spacing.sm),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: ProfileColors.accent.withValues(alpha: 0.2),
+                            color:
+                                GymTheme.colors.accent.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
                             '${percentage!.toInt()}%',
-                            style: const TextStyle(
-                              color: ProfileColors.accent,
+                            style: TextStyle(
+                              color: GymTheme.colors.accent,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -88,21 +82,18 @@ class TrainingFocusCard extends StatelessWidget {
                     ],
                   )
                 else
-                  const Text(
+                  Text(
                     'Not enough data',
-                    style: TextStyle(
-                      color: ProfileColors.textSecondary,
-                      fontSize: 14,
-                    ),
+                    style: GymTheme.text.body,
                   ),
               ],
             ),
           ),
 
           // Arrow
-          const Icon(
+          Icon(
             Icons.chevron_right,
-            color: ProfileColors.textMuted,
+            color: GymTheme.colors.textMuted,
           ),
         ],
       ),
@@ -117,20 +108,20 @@ class AICoachTeaserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(horizontal: GymTheme.spacing.md),
+      padding: EdgeInsets.all(GymTheme.spacing.md),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [
-            Color(0x33FC4C02), // ProfileColors.accent is Color(0xFFFC4C02)
-            Color(0x0DFC4C02),
+            GymTheme.colors.accent.withValues(alpha: 0.2), // 0x33 ~ 0.2
+            GymTheme.colors.accent.withValues(alpha: 0.05), // 0x0D ~ 0.05
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(GymTheme.radius.card),
         border: Border.all(
-          color: ProfileColors.accent.withValues(alpha: 0.3),
+          color: GymTheme.colors.accent.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -141,7 +132,7 @@ class AICoachTeaserCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: ProfileColors.accent,
+              color: GymTheme.colors.accent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -150,28 +141,21 @@ class AICoachTeaserCard extends StatelessWidget {
               size: 24,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: GymTheme.spacing.md),
 
           // Content
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'AI Coach',
-                  style: TextStyle(
-                    color: ProfileColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: GymTheme.text.cardTitle,
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: GymTheme.spacing.xs),
                 Text(
                   'Get personalized workout recommendations',
-                  style: TextStyle(
-                    color: ProfileColors.textSecondary,
-                    fontSize: 12,
-                  ),
+                  style: GymTheme.text.secondary,
                 ),
               ],
             ),
@@ -181,13 +165,13 @@ class AICoachTeaserCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: ProfileColors.surfaceLight,
+              color: GymTheme.colors.surfaceElevated,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text(
+            child: Text(
               'Soon',
               style: TextStyle(
-                color: ProfileColors.textMuted,
+                color: GymTheme.colors.textMuted,
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
               ),

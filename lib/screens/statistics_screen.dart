@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// import '../theme/gym_theme.dart'; // Unused
 import '../models/workout_session.dart';
 import '../services/workout_history_service.dart';
 // import '../services/statistics_service.dart'; // Removed

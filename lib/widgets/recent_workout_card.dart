@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'profile_header.dart' show ProfileColors;
+import '../theme/gym_theme.dart';
 import '../services/workout_history_service.dart';
 
 /// Recent workout summary card with "View all" action
@@ -16,16 +16,16 @@ class RecentWorkoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: EdgeInsets.symmetric(horizontal: GymTheme.spacing.md),
       decoration: BoxDecoration(
-        color: ProfileColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: GymTheme.colors.surface,
+        borderRadius: BorderRadius.circular(GymTheme.radius.card),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onViewAllTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(GymTheme.radius.card),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
@@ -35,18 +35,18 @@ class RecentWorkoutCard extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: ProfileColors.accent.withValues(alpha: 0.15),
+                    color: GymTheme.colors.accent.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     recentWorkout != null
                         ? Icons.history
                         : Icons.fitness_center_outlined,
-                    color: ProfileColors.accent,
+                    color: GymTheme.colors.accent,
                     size: 18,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: GymTheme.spacing.md),
 
                 // Content
                 Expanded(
@@ -54,39 +54,31 @@ class RecentWorkoutCard extends StatelessWidget {
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Most recent',
-                              style: TextStyle(
-                                color: ProfileColors.textMuted,
-                                fontSize: 10,
-                              ),
+                              style: GymTheme.text.secondary
+                                  .copyWith(fontSize: 10),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               _buildWorkoutSummary(),
-                              style: const TextStyle(
-                                color: ProfileColors.textPrimary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: GymTheme.text.cardTitle
+                                  .copyWith(fontSize: 13),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         )
-                      : const Text(
+                      : Text(
                           'No workouts yet',
-                          style: TextStyle(
-                            color: ProfileColors.textSecondary,
-                            fontSize: 13,
-                          ),
+                          style: GymTheme.text.secondary.copyWith(fontSize: 13),
                         ),
                 ),
 
                 // Chevron
-                const Icon(
+                Icon(
                   Icons.chevron_right,
-                  color: ProfileColors.textMuted,
+                  color: GymTheme.colors.textMuted,
                   size: 20,
                 ),
               ],

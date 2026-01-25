@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/gym_theme.dart';
 import '../services/profile_repository.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_dashboard_tile.dart';
@@ -52,21 +53,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: GymTheme.colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: GymTheme.colors
+            .surface, // Profile has varied header color in original? Keeping surface for consistency or background?
+        // Original was 1E1E1E (surface) while scaffolding was 121212.
+        // Let's align with GymTheme.
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Profile',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: GymTheme.text.screenTitle,
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Color(0xFFB3B3B3)),
+            icon: Icon(Icons.settings, color: GymTheme.colors.textSecondary),
             onPressed: () {
               // Settings navigation stub
             },
@@ -74,19 +74,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       body: _loading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
-                color: Color(0xFFFC4C02),
+                color: GymTheme.colors.accent,
               ),
             )
           : RefreshIndicator(
-              color: const Color(0xFFFC4C02),
+              color: GymTheme.colors.accent,
               onRefresh: _loadProfile,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                    horizontal: GymTheme.spacing.md), // Add padding for content
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    SizedBox(height: GymTheme.spacing.md),
                     // Compact header with avatar and inline stats
                     ProfileHeader(
                       username: 'Athlete',
@@ -96,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onSocialTap: _openFollowersModal,
                     ),
 
-                    const SizedBox(height: 12),
+                    SizedBox(height: GymTheme.spacing.md),
 
                     // Progress graph with Volume/Reps/Duration toggle
                     ProfileProgressGraph(

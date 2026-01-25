@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../theme/gym_theme.dart';
 
 class MuscleDistributionChart extends StatelessWidget {
   final Map<String, double> distribution;
@@ -9,10 +10,10 @@ class MuscleDistributionChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (distribution.isEmpty) {
-      return const SizedBox(
+      return SizedBox(
         height: 180,
         child: Center(
-          child: Text('No data', style: TextStyle(color: Colors.white54)),
+          child: Text('No data', style: GymTheme.text.secondary),
         ),
       );
     }
@@ -39,7 +40,7 @@ class MuscleDistributionChart extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: GymTheme.spacing.md),
           // Legend
           Expanded(
             flex: 5,
@@ -60,14 +61,11 @@ class MuscleDistributionChart extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: GymTheme.spacing.sm),
                       Expanded(
                         child: Text(
                           entry.key,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
+                          style: GymTheme.text.secondary.copyWith(fontSize: 12),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -77,10 +75,10 @@ class MuscleDistributionChart extends StatelessWidget {
                         entry.value % 1 == 0
                             ? entry.value.toInt().toString()
                             : entry.value.toStringAsFixed(1),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
+                        style: GymTheme.text.body.copyWith(
+                          color: GymTheme.colors.textPrimary,
                           fontWeight: FontWeight.bold,
+                          fontSize: 12,
                         ),
                       ),
                     ],

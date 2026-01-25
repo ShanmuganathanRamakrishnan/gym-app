@@ -45,7 +45,8 @@ class _ExerciseDemoModalState extends State<ExerciseDemoModal> {
       child: Column(
         children: [
           // Handle bar
-          if (!_isFullscreen)
+          // Handle bar
+          if (!_isFullscreen) ...[
             Container(
               margin: const EdgeInsets.only(top: 12),
               width: 40,
@@ -55,6 +56,7 @@ class _ExerciseDemoModalState extends State<ExerciseDemoModal> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
+          ],
 
           // Header
           Padding(
@@ -242,10 +244,10 @@ class _ExerciseDemoModalState extends State<ExerciseDemoModal> {
           color: AppColors.textMuted.withValues(alpha: 0.5),
         ),
         const SizedBox(height: 12),
-        Text(
+        const Text(
           'Demo coming soon',
           style: TextStyle(
-            color: AppColors.textMuted.withValues(alpha: 0.7),
+            color: AppColors.textMuted,
             fontSize: 14,
           ),
         ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'profile_header.dart' show ProfileColors;
+import '../theme/gym_theme.dart';
 import '../services/workout_history_service.dart';
 
 /// Progress graph data aggregated per day
@@ -157,11 +157,11 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
     final hasAnyData = days.any((d) => _getValue(d) > 0);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(horizontal: GymTheme.spacing.md),
+      padding: EdgeInsets.all(GymTheme.spacing.md),
       decoration: BoxDecoration(
-        color: ProfileColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: GymTheme.colors.surface,
+        borderRadius: BorderRadius.circular(GymTheme.radius.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,8 +178,8 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
                     margin: EdgeInsets.only(right: index < 2 ? 6 : 0),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? ProfileColors.accent
-                          : ProfileColors.surfaceLight,
+                          ? GymTheme.colors.accent
+                          : GymTheme.colors.surfaceElevated,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
@@ -188,7 +188,7 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
                         style: TextStyle(
                           color: isSelected
                               ? Colors.white
-                              : ProfileColors.textSecondary,
+                              : GymTheme.colors.textSecondary,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
@@ -200,20 +200,20 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
             }),
           ),
 
-          const SizedBox(height: 4),
+          SizedBox(height: GymTheme.spacing.xs),
 
           // Unit label
           Center(
             child: Text(
               _unitLabels[_selectedIndex],
-              style: const TextStyle(
-                color: ProfileColors.textMuted,
+              style: TextStyle(
+                color: GymTheme.colors.textMuted,
                 fontSize: 10,
               ),
             ),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: GymTheme.spacing.sm),
 
           // Insight line with highlighted days
           Builder(
@@ -221,17 +221,14 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
               final parts = _getInsightParts(days);
               return RichText(
                 text: TextSpan(
-                  style: const TextStyle(
-                    color: ProfileColors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: GymTheme.text.secondary
+                      .copyWith(fontWeight: FontWeight.w500),
                   children: [
                     TextSpan(text: parts['prefix'] as String),
                     TextSpan(
                       text: parts['days'] as String,
-                      style: const TextStyle(
-                        color: ProfileColors.accent,
+                      style: TextStyle(
+                        color: GymTheme.colors.accent,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -242,7 +239,7 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
             },
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: GymTheme.spacing.sm),
 
           // Graph area with bars
           SizedBox(
@@ -272,13 +269,15 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
                     const Spacer(flex: 1),
                     Container(
                       height: 1,
-                      color: ProfileColors.textSecondary.withValues(alpha: 0.1),
+                      color:
+                          GymTheme.colors.textSecondary.withValues(alpha: 0.1),
                     ),
                     // 66% from top (33% height)
                     const Spacer(flex: 1),
                     Container(
                       height: 1,
-                      color: ProfileColors.textSecondary.withValues(alpha: 0.1),
+                      color:
+                          GymTheme.colors.textSecondary.withValues(alpha: 0.1),
                     ),
                     const Spacer(flex: 1),
                   ],
@@ -298,15 +297,15 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
                   if (hasValue) {
                     if (isToday) {
                       // Today's bar: slightly brighter
-                      barColor = ProfileColors.accent;
+                      barColor = GymTheme.colors.accent;
                     } else {
                       // Other active days: full accent
-                      barColor = ProfileColors.accent.withValues(alpha: 0.85);
+                      barColor = GymTheme.colors.accent.withValues(alpha: 0.85);
                     }
                   } else {
                     // Inactive days: 40% opacity placeholder
                     barColor =
-                        ProfileColors.surfaceLight.withValues(alpha: 0.4);
+                        GymTheme.colors.surfaceElevated.withValues(alpha: 0.4);
                   }
 
                   return Expanded(
@@ -341,8 +340,8 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
                   _weekdays[day.date.weekday - 1],
                   style: TextStyle(
                     color: hasValue
-                        ? ProfileColors.accent
-                        : ProfileColors.textMuted,
+                        ? GymTheme.colors.accent
+                        : GymTheme.colors.textMuted,
                     fontSize: 10,
                     fontWeight: hasValue ? FontWeight.w600 : FontWeight.normal,
                   ),
@@ -369,7 +368,7 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
                   child: Container(
                     height: 4,
                     decoration: BoxDecoration(
-                      color: ProfileColors.surfaceLight,
+                      color: GymTheme.colors.surfaceElevated,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -393,8 +392,8 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
                   _weekdays[date.weekday - 1],
                   style: TextStyle(
                     color: isToday
-                        ? ProfileColors.accent
-                        : ProfileColors.textMuted,
+                        ? GymTheme.colors.accent
+                        : GymTheme.colors.textMuted,
                     fontSize: 10,
                     fontWeight: isToday ? FontWeight.w600 : FontWeight.normal,
                   ),

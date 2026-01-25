@@ -40,7 +40,9 @@ class MuscleHeatmap extends StatelessWidget {
         defaultColor: const Color(0xFF2A2A2A), // Dark grey for neutral
         strokeColor: const Color(0xFF111111), // Darker stroke
         onMuscleTap: (id) {
-          if (onMuscleTap == null) return;
+          if (onMuscleTap == null) {
+            return;
+          }
           // Reverse lookup ID to InternalMuscle
           // We can use the map entries
           final entry = muscleSelectorIdMap.entries.firstWhere(

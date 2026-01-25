@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'theme/gym_theme.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'ai_screen.dart';
@@ -9,17 +10,17 @@ void main() {
   runApp(const GymApp());
 }
 
-/// Dark mode color constants
+/// Dark mode color constants (Bridge to GymTheme)
 class AppColors {
-  static const background = Color(0xFF0E0E0E);
-  static const surface = Color(0xFF1A1A1A);
-  static const surfaceLight = Color(0xFF222222);
+  static const background = Color(0xFF0E0E0E); // GymTheme.colors.background
+  static const surface = Color(0xFF1E1E1E);
+  static const surfaceLight = Color(0xFF2C2C2E);
   static const divider = Color(0xFF2A2A2A);
   static const textPrimary = Color(0xFFFFFFFF);
   static const textSecondary = Color(0xFFB3B3B3);
   static const textMuted = Color(0xFF6B6B6B);
-  static const accent = Color(0xFFFC4C02); // Strava orange
-  static const accentDim = Color(0x33FC4C02); // 20% opacity accent
+  static const accent = Color(0xFFFC4C02);
+  static const accentDim = Color(0x33FC4C02);
 }
 
 class GymApp extends StatelessWidget {
@@ -30,57 +31,7 @@ class GymApp extends StatelessWidget {
     return MaterialApp(
       title: 'Gym App',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        colorScheme: const ColorScheme.dark(
-          surface: AppColors.surface,
-          primary: AppColors.accent,
-          onPrimary: Colors.white,
-          onSurface: AppColors.textPrimary,
-        ),
-        scaffoldBackgroundColor: AppColors.background,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.background,
-          foregroundColor: AppColors.textPrimary,
-          elevation: 0,
-          centerTitle: false,
-        ),
-        cardTheme: CardThemeData(
-          color: AppColors.surface,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        textTheme: const TextTheme(
-          headlineMedium: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-          titleMedium: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-          bodyMedium: TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
-          bodySmall: TextStyle(
-            fontSize: 12,
-            color: AppColors.textMuted,
-          ),
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: AppColors.surface,
-          selectedItemColor: AppColors.accent,
-          unselectedItemColor: AppColors.textMuted,
-          type: BottomNavigationBarType.fixed,
-          showUnselectedLabels: true,
-        ),
-      ),
+      theme: GymTheme.themeData,
       // Start at Auth screen
       home: const AuthScreen(),
     );

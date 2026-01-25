@@ -1,15 +1,5 @@
 import 'package:flutter/material.dart';
-
-// Profile theme colors
-class ProfileColors {
-  static const Color background = Color(0xFF121212);
-  static const Color surface = Color(0xFF1E1E1E);
-  static const Color surfaceLight = Color(0xFF2A2A2A);
-  static const Color accent = Color(0xFFFC4C02);
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFFB3B3B3);
-  static const Color textMuted = Color(0xFF757575);
-}
+import '../theme/gym_theme.dart';
 
 /// Compact profile header with avatar, username, and secondary info
 class ProfileHeader extends StatelessWidget {
@@ -33,7 +23,11 @@ class ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: GymTheme.spacing.md, // 16 -> md (16)
+        vertical: GymTheme.spacing.md, // 12 -> md (16) for consistency?
+      ),
+      // Removed 16px hardcode, using theme spacing
       child: Row(
         children: [
           // Avatar (56px)
@@ -42,9 +36,9 @@ class ProfileHeader extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: ProfileColors.surfaceLight,
+              color: GymTheme.colors.surfaceElevated,
               border: Border.all(
-                color: ProfileColors.accent.withValues(alpha: 0.5),
+                color: GymTheme.colors.accent.withValues(alpha: 0.5),
                 width: 1.5,
               ),
             ),
@@ -58,7 +52,7 @@ class ProfileHeader extends StatelessWidget {
                   )
                 : _buildDefaultAvatar(),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: GymTheme.spacing.md),
 
           // Username & secondary info
           Expanded(
@@ -67,19 +61,12 @@ class ProfileHeader extends StatelessWidget {
               children: [
                 Text(
                   username,
-                  style: const TextStyle(
-                    color: ProfileColors.textPrimary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: GymTheme.text.sectionTitle,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   _buildSecondaryText(),
-                  style: const TextStyle(
-                    color: ProfileColors.textMuted,
-                    fontSize: 12,
-                  ),
+                  style: GymTheme.text.secondary,
                 ),
               ],
             ),
@@ -88,9 +75,9 @@ class ProfileHeader extends StatelessWidget {
           // Social icon button
           IconButton(
             onPressed: onSocialTap,
-            icon: const Icon(
+            icon: Icon(
               Icons.people_outline,
-              color: ProfileColors.textSecondary,
+              color: GymTheme.colors.textSecondary,
               size: 22,
             ),
             tooltip: 'Followers & Following',
@@ -112,10 +99,10 @@ class ProfileHeader extends StatelessWidget {
   }
 
   Widget _buildDefaultAvatar() {
-    return const Icon(
+    return Icon(
       Icons.person,
       size: 28,
-      color: ProfileColors.textMuted,
+      color: GymTheme.colors.textMuted,
     );
   }
 }

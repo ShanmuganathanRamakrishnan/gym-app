@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'profile_header.dart' show ProfileColors;
+import '../theme/gym_theme.dart';
 
 /// Followers/Following modal bottom sheet
 class FollowersModal extends StatelessWidget {
@@ -16,9 +16,10 @@ class FollowersModal extends StatelessWidget {
       {int followers = 0, int following = 0}) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: ProfileColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      backgroundColor: GymTheme.colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(GymTheme.radius.xl)),
       ),
       builder: (_) => FollowersModal(
         followerCount: followers,
@@ -30,7 +31,7 @@ class FollowersModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(GymTheme.spacing.lg),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -39,22 +40,18 @@ class FollowersModal extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: ProfileColors.surfaceLight,
+              color: GymTheme.colors.surfaceElevated,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: GymTheme.spacing.lg),
 
           // Title
-          const Text(
+          Text(
             'Social',
-            style: TextStyle(
-              color: ProfileColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: GymTheme.text.sectionTitle,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: GymTheme.spacing.lg),
 
           // Stats row
           Row(
@@ -64,41 +61,39 @@ class FollowersModal extends StatelessWidget {
               Container(
                 width: 1,
                 height: 40,
-                color: ProfileColors.surfaceLight,
+                color: GymTheme.colors.surfaceElevated,
               ),
               _buildStatColumn('Following', followingCount),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: GymTheme.spacing.lg),
 
           // Coming soon message
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(
+                horizontal: GymTheme.spacing.md, vertical: 12),
             decoration: BoxDecoration(
-              color: ProfileColors.surfaceLight,
-              borderRadius: BorderRadius.circular(12),
+              color: GymTheme.colors.surfaceElevated,
+              borderRadius: BorderRadius.circular(GymTheme.radius.md),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: ProfileColors.textMuted,
+                  color: GymTheme.colors.textMuted,
                   size: 18,
                 ),
-                SizedBox(width: 12),
+                SizedBox(width: GymTheme.spacing.md),
                 Expanded(
                   child: Text(
                     'Social features coming soon',
-                    style: TextStyle(
-                      color: ProfileColors.textSecondary,
-                      fontSize: 13,
-                    ),
+                    style: GymTheme.text.secondary.copyWith(fontSize: 13),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: GymTheme.spacing.md),
         ],
       ),
     );
@@ -109,19 +104,12 @@ class FollowersModal extends StatelessWidget {
       children: [
         Text(
           value.toString(),
-          style: const TextStyle(
-            color: ProfileColors.textPrimary,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: GymTheme.text.headline,
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: GymTheme.spacing.xs),
         Text(
           label,
-          style: const TextStyle(
-            color: ProfileColors.textMuted,
-            fontSize: 12,
-          ),
+          style: GymTheme.text.secondary,
         ),
       ],
     );

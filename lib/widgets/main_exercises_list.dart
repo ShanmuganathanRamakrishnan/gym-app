@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/muscle_stats_service.dart';
+import '../theme/gym_theme.dart';
 
 class MainExercisesList extends StatelessWidget {
   final List<ExerciseStat> exercises;
@@ -9,63 +10,55 @@ class MainExercisesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(GymTheme.spacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
+        color: GymTheme.colors.surface,
+        borderRadius: BorderRadius.circular(GymTheme.radius.card),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Top Exercises',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: GymTheme.text.cardTitle,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: GymTheme.spacing.md),
           if (exercises.isEmpty)
-            const Center(
+            Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text('No data', style: TextStyle(color: Colors.white54)),
+                padding: EdgeInsets.symmetric(vertical: GymTheme.spacing.sm),
+                child: Text('No data', style: GymTheme.text.secondary),
               ),
             ),
           ...exercises.asMap().entries.map((entry) {
             final index = entry.key;
             final item = entry.value;
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: EdgeInsets.symmetric(vertical: GymTheme.spacing.sm),
               child: Row(
                 children: [
                   Text(
                     '${index + 1}',
-                    style: const TextStyle(
-                      color: Color(0xFFFC4C02),
+                    style: TextStyle(
+                      color: GymTheme.colors.accent,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: GymTheme.spacing.md),
                   Expanded(
                     child: Text(
                       item.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
+                      style: GymTheme.text.body.copyWith(
+                        color: GymTheme.colors.textPrimary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                   Text(
                     '${item.totalSets} sets',
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 12,
-                    ),
+                    style: GymTheme.text.secondary,
                   ),
                 ],
               ),

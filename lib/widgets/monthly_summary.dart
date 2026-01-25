@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/gym_theme.dart';
 
 class MonthlySummary extends StatelessWidget {
   final int workouts;
@@ -15,24 +16,20 @@ class MonthlySummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(GymTheme.spacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
+        color: GymTheme.colors.surface,
+        borderRadius: BorderRadius.circular(GymTheme.radius.card),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'This Month',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: GymTheme.text.cardTitle,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: GymTheme.spacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -51,23 +48,20 @@ class MonthlySummary extends StatelessWidget {
   Widget _buildMetric(String label, String value, IconData icon) {
     return Column(
       children: [
-        Icon(icon, color: const Color(0xFFFC4C02), size: 24),
-        const SizedBox(height: 8),
+        Icon(icon, color: GymTheme.colors.accent, size: 24),
+        SizedBox(height: GymTheme.spacing.sm),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: GymTheme.colors.textPrimary,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: GymTheme.spacing.xs),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white54,
-            fontSize: 12,
-          ),
+          style: GymTheme.text.secondary,
         ),
       ],
     );
