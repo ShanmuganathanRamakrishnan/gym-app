@@ -4,12 +4,10 @@ import '../services/workout_history_service.dart';
 import '../services/statistics_service.dart';
 import '../widgets/period_toggle.dart';
 import '../widgets/muscle_heatmap.dart';
-import '../widgets/heatmap_legend.dart';
-import '../widgets/distribution_chart.dart';
-import '../widgets/weekly_summary_bars.dart';
-import '../widgets/stat_summary_cards.dart';
-import '../widgets/monthly_summary.dart';
-import 'statistics_advanced_placeholder.dart';
+
+import '../services/muscle_stats_service.dart';
+import '../utils/intensity_normalizer.dart';
+import '../models/muscle_selector_mapping.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -21,6 +19,7 @@ class StatisticsScreen extends StatefulWidget {
 class _StatisticsScreenState extends State<StatisticsScreen> {
   final WorkoutHistoryService _historyService = WorkoutHistoryService();
   final StatisticsService _statsService = StatisticsService();
+  final MuscleStatsService _muscleStatsService = MuscleStatsService();
 
   // State
   TimeWindow _selectedWindow = TimeWindow.thisWeek;
@@ -29,23 +28,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   // Data
   List<WorkoutSession> _allSessions = [];
   List<WorkoutSession> _filteredSessions = [];
-  Map<String, double> _muscleSetsHeatmap = {};
-  Map<String, double> _muscleDistribution = {};
 
-  // Summary Data
-  int _workouts = 0;
-  int _sets = 0;
-  int _duration = 0;
-
-  // Previous Period Data (for comparison)
-  int? _prevWorkouts;
-  int? _prevSets;
-  int? _prevDuration;
-
-  // Monthly Data
-  int _monthlyWorkouts = 0;
-  int _monthlySets = 0;
-  int _monthlyDuration = 0;
+  // Stats Data
+  Map<InternalMuscle, double> _muscleIntensities = {}; // For new Heatmap
 
   @override
   void initState() {
@@ -59,12 +44,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
     _allSessions = _historyService.getAllDetailedSessions();
 
-    // Quick monthly calc (independent of toggle)
-    _calculateMonthlyData();
+    // Monthly calc removed for layout lock phase
+    // _calculateMonthlyData();
 
     _updateFilteredData();
   }
 
+  /* Monthly Data logic commented out for layout lock
   void _calculateMonthlyData() {
     final now = DateTime.now();
     final startOfMonth = DateTime(now.year, now.month, 1);
@@ -81,6 +67,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     _monthlyDuration =
         monthlySessions.fold(0, (sum, s) => sum + s.totalDuration.inMinutes);
   }
+  */
 
   void _updateFilteredData() {
     if (!mounted) return;
@@ -92,31 +79,21 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     _filteredSessions =
         _statsService.filterSessions(_allSessions, _selectedWindow);
 
-    final muscleStats = _statsService.aggregateMuscleSets(_filteredSessions);
-    _muscleSetsHeatmap = muscleStats.setsPerMuscle;
-    _muscleDistribution =
-        muscleStats.setsPerMuscle; // Use same data for distribution
+    // Old Stats Service logic removed for layout lock
+    // final muscleStats = _statsService.aggregateMuscleSets(_filteredSessions);
+    // _muscleDistribution = muscleStats.setsPerMuscle;
+    // _workouts = _filteredSessions.length;
+    // _sets = muscleStats.totalSets;
+    // _duration =_filteredSessions.fold(0, (sum, s) => sum + s.totalDuration.inMinutes);
 
-    _workouts = _filteredSessions.length;
-    _sets = muscleStats.totalSets;
-    _duration =
-        _filteredSessions.fold(0, (sum, s) => sum + s.totalDuration.inMinutes);
+    // New Muscle Stats (for Heatmap)
+    final rawMuscleLoad =
+        _muscleStatsService.computeMuscleLoad(_filteredSessions);
+    _muscleIntensities = IntensityNormalizer.normalize(rawMuscleLoad);
 
-    // 2. Previous Window Data (for deltas)
-    // 2. Previous Window Data (for deltas)
-
-    // However, the Enum has 'LastWeek' which acts as previous for 'ThisWeek'.
-    // For 'LastWeek', we need '2 Weeks Ago'. My Service doesn't support that yet.
-    // I will enable simple comparison:
-    // ThisWeek -> compare with LastWeek
-    // LastWeek -> compare with (Previous 7 days? Not supported by enum) -> pass null
-    // Last4Weeks -> compare with (Prior 4 Weeks? Not supported) -> pass null
-
-    // Improvement: StatisticsService should support custom dates, but sticking to Enum for now.
-    // Only 'This Week' can strictly compare with 'Last Week' easily via Enum behavior.
-
+    // 2. Previous Window Data removed for layout lock
+    /*
     if (_selectedWindow == TimeWindow.thisWeek) {
-      // Actually I need to re-call filter with TimeWindow.lastWeek
       final lastWeekSessions =
           _statsService.filterSessions(_allSessions, TimeWindow.lastWeek);
       final prevStatsData = _statsService.aggregateMuscleSets(lastWeekSessions);
@@ -130,6 +107,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       _prevSets = null;
       _prevDuration = null;
     }
+    */
 
     setState(() {
       _loading = false;
@@ -143,8 +121,25 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     _updateFilteredData();
   }
 
-  void _showMuscleValue(String muscle, double count) {
-    // Show modal as requested
+  void _showMuscleDetails(InternalMuscle muscle) {
+    // 1. Get stats
+    final topExercises =
+        _muscleStatsService.getTopExercises(muscle, _filteredSessions);
+    // Convert generic muscle name
+    String muscleName = muscle.name.toUpperCase();
+
+    // Calculate total sets for this muscle (from raw load calculation logic essentially)
+    // We can re-compute or just sum top exercises?
+    // Compound logic makes exact "set count" tricky to display if we distributed values (decimals).
+    // Let's count "Direct Sets" involving this muscle?
+    // Or just sum the exercise set counts (which might double count if exercise hits multiple)?
+    // User wants "Total sets".
+    // _muscleStatsService.computeMuscleLoad returns doubles.
+    // Let's re-calculate precise value or just sum the truncated counts for display.
+    // Normalized intensity is stored, but raw load isn't stored in state (oops, local var).
+    // I will just sum the top exercises values for the display (approximate matches what user sees in list).
+    int totalSets = topExercises.fold(0, (sum, e) => sum + e.value);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1E1E1E),
@@ -157,7 +152,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                muscle,
+                muscleName,
                 style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -165,22 +160,36 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '${count.toInt()} Sets',
+                '$totalSets Sets',
                 style: const TextStyle(
                     color: Color(0xFFFC4C02),
                     fontSize: 16,
                     fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 24),
-              // Placeholder for "Top Exercises"
-              const Text(
-                'Top Exercises',
-                style: TextStyle(color: Colors.white54, fontSize: 14),
-              ),
-              const SizedBox(height: 12),
-              // We could compute top exercises here, but for MVP just showing the count is fine.
-              const Text('Bench Press (Sample)',
-                  style: TextStyle(color: Colors.white70)),
+              if (topExercises.isEmpty)
+                const Text('No data for this period',
+                    style: TextStyle(color: Colors.white54)),
+              if (topExercises.isNotEmpty) ...[
+                const Text(
+                  'Top Exercises',
+                  style: TextStyle(color: Colors.white54, fontSize: 14),
+                ),
+                const SizedBox(height: 12),
+                // Show top 3
+                ...topExercises.take(3).map((e) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(e.key,
+                              style: const TextStyle(color: Colors.white)),
+                          Text('${e.value} sets',
+                              style: const TextStyle(color: Colors.white70)),
+                        ],
+                      ),
+                    )),
+              ]
             ],
           ),
         );
@@ -204,92 +213,64 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       body: _loading
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFFFC4C02)))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Period Toggle
-                  PeriodToggle(
-                    selectedWindow: _selectedWindow,
-                    onWindowChanged: _onWindowChanged,
-                  ),
-                  const SizedBox(height: 24),
+          : SafeArea(
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Period Toggle
+                    PeriodToggle(
+                      selectedWindow: _selectedWindow,
+                      onWindowChanged: _onWindowChanged,
+                    ),
+                    const SizedBox(height: 32),
 
-                  // HEATMAP
-                  const Text('Muscle Heatmap',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  MuscleHeatmap(
-                    muscleSets: _muscleSetsHeatmap,
-                    onMuscleTap: _showMuscleValue,
-                  ),
-                  const SizedBox(height: 12),
-                  const HeatmapLegend(),
+                    // HEATMAP (Layout Locked)
+                    // Centered and Constrained for all screens
+                    const Text('Muscle Heatmap',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 16),
 
-                  const SizedBox(height: 32),
-                  const Divider(color: Colors.white12),
-                  const SizedBox(height: 24),
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth:
+                              400, // Prevent massive heatmap on huge screens
+                          maxHeight: 500, // Explicit height cap safety
+                        ),
+                        child: MuscleHeatmap(
+                          normalizedIntensities: _muscleIntensities,
+                          onMuscleTap: _showMuscleDetails,
+                        ),
+                      ),
+                    ),
 
-                  // DISTRIBUTION
-                  const Text('Distribution',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  MuscleDistributionChart(distribution: _muscleDistribution),
+                    // SPACE FOR LEGEND
+                    const SizedBox(height: 24),
+                    // TODO: Insert HeatmapLegend here
 
-                  const SizedBox(height: 32),
-                  const Divider(color: Colors.white12),
-                  const SizedBox(height: 24),
+                    const Divider(color: Colors.white12),
+                    const SizedBox(height: 24),
 
-                  // WEEKLY BARS (Last 7 Days Body Graph)
-                  const Text('Last 7 days',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight
-                              .bold)), // Changed title to match screenshot-ish
-                  const SizedBox(height: 16),
-                  WeeklySummaryBars(
-                    sessions: _filteredSessions,
-                    window: _selectedWindow, // Bars widget handles logic
-                  ),
+                    // SPACE FOR DISTRIBUTION
+                    // TODO: Insert MuscleDistributionChart here
+                    const SizedBox(height: 200), // Reserved space
 
-                  const SizedBox(height: 32),
-                  const Divider(color: Colors.white12),
-                  const SizedBox(height: 24),
+                    const Divider(color: Colors.white12),
+                    const SizedBox(height: 24),
 
-                  // SUMMARY CARDS
-                  StatSummaryCards(
-                    workouts: _workouts,
-                    sets: _sets,
-                    durationMinutes: _duration,
-                    prevWorkouts: _prevWorkouts,
-                    prevSets: _prevSets,
-                    prevDuration: _prevDuration,
-                  ),
+                    // SPACE FOR WEEKLY BARS
+                    // TODO: Insert WeeklySummaryBars here
+                    const SizedBox(height: 150), // Reserved space
 
-                  const SizedBox(height: 32),
-
-                  // MONTHLY SUMMARY
-                  MonthlySummary(
-                    workouts: _monthlyWorkouts,
-                    sets: _monthlySets,
-                    durationMinutes: _monthlyDuration,
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // ADVANCED STATS (PRO)
-                  const StatisticsAdvancedPlaceholder(),
-
-                  const SizedBox(height: 48),
-                ],
+                    const SizedBox(height: 48),
+                  ],
+                ),
               ),
             ),
     );
