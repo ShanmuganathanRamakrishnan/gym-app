@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'profile_header.dart' show ProfileColors;
 
-/// Dashboard tile for profile (Statistics, Exercises, Measures, Calendar)
+/// Compact dashboard tile for profile (Statistics, Achievements, Measures, Calendar)
 class ProfileDashboardTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String? subtitle;
   final VoidCallback? onTap;
 
   const ProfileDashboardTile({
     super.key,
     required this.icon,
     required this.title,
-    this.subtitle,
     this.onTap,
   });
 
@@ -21,47 +19,102 @@ class ProfileDashboardTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        height: 64,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: ProfileColors.surface,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: ProfileColors.accent.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 icon,
                 color: ProfileColors.accent,
-                size: 22,
+                size: 18,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(width: 10),
             Text(
               title,
               style: const TextStyle(
                 color: ProfileColors.textPrimary,
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                subtitle!,
-                style: const TextStyle(
-                  color: ProfileColors.textMuted,
-                  fontSize: 12,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Achievements tile with "Soon" badge
+class _AchievementsTile extends StatelessWidget {
+  final VoidCallback? onTap;
+
+  const _AchievementsTile({this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 64,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: ProfileColors.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: ProfileColors.accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.emoji_events_outlined,
+                color: ProfileColors.accent,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Achievements',
+                style: TextStyle(
+                  color: ProfileColors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ],
+            ),
+            // "Soon" badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: ProfileColors.surfaceLight,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Text(
+                'Soon',
+                style: TextStyle(
+                  color: ProfileColors.textMuted,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -72,14 +125,14 @@ class ProfileDashboardTile extends StatelessWidget {
 /// 2x2 Dashboard grid for profile
 class ProfileDashboard extends StatelessWidget {
   final VoidCallback? onStatisticsTap;
-  final VoidCallback? onExercisesTap;
+  final VoidCallback? onAchievementsTap;
   final VoidCallback? onMeasuresTap;
   final VoidCallback? onCalendarTap;
 
   const ProfileDashboard({
     super.key,
     this.onStatisticsTap,
-    this.onExercisesTap,
+    this.onAchievementsTap,
     this.onMeasuresTap,
     this.onCalendarTap,
   });
@@ -96,17 +149,13 @@ class ProfileDashboard extends StatelessWidget {
                 child: ProfileDashboardTile(
                   icon: Icons.bar_chart,
                   title: 'Statistics',
-                  subtitle: 'View progress',
                   onTap: onStatisticsTap,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: ProfileDashboardTile(
-                  icon: Icons.fitness_center,
-                  title: 'Exercises',
-                  subtitle: 'Exercise library',
-                  onTap: onExercisesTap,
+                child: _AchievementsTile(
+                  onTap: onAchievementsTap,
                 ),
               ),
             ],
@@ -118,7 +167,6 @@ class ProfileDashboard extends StatelessWidget {
                 child: ProfileDashboardTile(
                   icon: Icons.straighten,
                   title: 'Measures',
-                  subtitle: 'Body tracking',
                   onTap: onMeasuresTap,
                 ),
               ),
@@ -127,7 +175,6 @@ class ProfileDashboard extends StatelessWidget {
                 child: ProfileDashboardTile(
                   icon: Icons.calendar_today,
                   title: 'Calendar',
-                  subtitle: 'Workout history',
                   onTap: onCalendarTap,
                 ),
               ),

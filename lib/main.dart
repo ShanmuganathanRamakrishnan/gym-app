@@ -3,6 +3,7 @@ import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'ai_screen.dart';
 import 'workout_screen.dart';
+import 'screens/profile_screen.dart';
 
 void main() {
   runApp(const GymApp());
@@ -139,19 +140,4 @@ class _MainShellState extends State<MainShell> {
 }
 
 /// Legacy WorkoutsScreen placeholder - now using WorkoutScreen from workout_screen.dart
-
-/// Placeholder: Profile screen (includes Progress/Stats)
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: const Center(
-        child: Text('Profile & Progress',
-            style: TextStyle(color: AppColors.textSecondary)),
-      ),
-    );
-  }
-}
+/// ProfileScreen is now imported from screens/profile_screen.dart
