@@ -9,26 +9,34 @@ enum InternalMuscle {
   quads,
   hamstrings,
   calves,
-  forearms, // Added for completeness if supported
-  traps, // Added for completeness if supported
+  forearms,
+  traps,
+  adductors, // Added
+  abductors, // Added
+  neck, // Added
   other,
 }
 
 /// Mapping to muscle_selector package IDs
-/// Based on standard SVG IDs usually found in such packages.
+/// Based on standard SVG IDs.
 const Map<InternalMuscle, String> muscleSelectorIdMap = {
   InternalMuscle.chest: 'chest',
   InternalMuscle.shoulders: 'shoulders',
   InternalMuscle.biceps: 'biceps',
   InternalMuscle.triceps: 'triceps',
-  InternalMuscle.back: 'back',
+  InternalMuscle.back:
+      'back', // Checks 'lats', 'upper_back', 'lower_back' usually managed by parser groups
   InternalMuscle.abs: 'abs',
   InternalMuscle.glutes: 'glutes',
   InternalMuscle.quads: 'quads',
-  InternalMuscle.hamstrings: 'hamstrings',
+  InternalMuscle.hamstrings:
+      'hamstrings', // 'harmstrings' in lib typo, handled by map logic?
   InternalMuscle.calves: 'calves',
-  InternalMuscle.forearms: 'forearms',
-  InternalMuscle.traps: 'traps',
+  InternalMuscle.forearms: 'forearm', // 'forearm' group in parser
+  InternalMuscle.traps: 'trapezius',
+  InternalMuscle.adductors: 'adductors',
+  InternalMuscle.abductors: 'abductor',
+  InternalMuscle.neck: 'neck',
 };
 
 /// Reverse lookup or helper if needed for string normalization
@@ -58,6 +66,8 @@ InternalMuscle? parseInternalMuscle(String name) {
   if (lower.contains('abs') ||
       lower.contains('core') ||
       lower.contains('plank') ||
+      (lower.contains('hip') &&
+          lower.contains('flexOR')) || // Specific Hip Flexor
       lower.contains('crunch')) {
     return InternalMuscle.abs;
   }
@@ -77,11 +87,20 @@ InternalMuscle? parseInternalMuscle(String name) {
   if (lower.contains('calf') || lower.contains('calves')) {
     return InternalMuscle.calves;
   }
-  if (lower.contains('forearm')) {
+  if (lower.contains('forearm') || lower.contains('brachioradialis')) {
     return InternalMuscle.forearms;
   }
   if (lower.contains('trap')) {
     return InternalMuscle.traps;
+  }
+  if (lower.contains('adductor') || lower.contains('inner thigh')) {
+    return InternalMuscle.adductors;
+  }
+  if (lower.contains('abductor') || lower.contains('outer thigh')) {
+    return InternalMuscle.abductors;
+  }
+  if (lower.contains('neck')) {
+    return InternalMuscle.neck;
   }
 
   return InternalMuscle.other;

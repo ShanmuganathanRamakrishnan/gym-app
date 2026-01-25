@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import '../models/workout_session.dart';
 import '../services/workout_history_service.dart';
-import '../services/statistics_service.dart';
-import '../widgets/period_toggle.dart';
-import '../widgets/muscle_heatmap.dart';
-
+// import '../services/statistics_service.dart'; // Removed
+import '../widgets/week_navigator.dart';
 import '../services/muscle_stats_service.dart';
 import '../utils/intensity_normalizer.dart';
 import '../models/muscle_selector_mapping.dart';
+import '../widgets/muscle_heatmap.dart';
+import '../widgets/heatmap_intensity_legend.dart';
+import '../widgets/distribution_chart.dart';
+import '../widgets/main_exercises_list.dart';
+import '../widgets/monthly_summary.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -18,11 +21,11 @@ class StatisticsScreen extends StatefulWidget {
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
   final WorkoutHistoryService _historyService = WorkoutHistoryService();
-  final StatisticsService _statsService = StatisticsService();
+  // final StatisticsService _statsService = StatisticsService(); // Removed as filtering is now local
   final MuscleStatsService _muscleStatsService = MuscleStatsService();
 
   // State
-  TimeWindow _selectedWindow = TimeWindow.thisWeek;
+  late DateTime _currentWeekStart;
   bool _loading = true;
 
   // Data
@@ -31,11 +34,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   // Stats Data
   Map<InternalMuscle, double> _muscleIntensities = {}; // For new Heatmap
+  Map<String, double> _muscleDistribution = {}; // For Pie Chart
+  List<ExerciseStat> _topExercises = [];
+  MonthlyStats? _monthlyStats;
 
   @override
   void initState() {
     super.initState();
+    _initDates();
     _loadData();
+  }
+
+  void _initDates() {
+    // ISO 8601: Mon=1...Sun=7
+    final now = DateTime.now();
+    // Monday of current week
+    _currentWeekStart = DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: now.weekday - 1));
   }
 
   Future<void> _loadData() async {
@@ -44,30 +59,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
     _allSessions = _historyService.getAllDetailedSessions();
 
-    // Monthly calc removed for layout lock phase
-    // _calculateMonthlyData();
-
     _updateFilteredData();
   }
-
-  /* Monthly Data logic commented out for layout lock
-  void _calculateMonthlyData() {
-    final now = DateTime.now();
-    final startOfMonth = DateTime(now.year, now.month, 1);
-
-    final monthlySessions = _allSessions.where((s) {
-      if (s.endTime == null) return false;
-      return s.endTime!.isAtSameMomentAs(startOfMonth) ||
-          s.endTime!.isAfter(startOfMonth);
-    }).toList();
-
-    _monthlyWorkouts = monthlySessions.length;
-    _monthlySets =
-        monthlySessions.fold(0, (sum, s) => sum + s.totalSetsCompleted);
-    _monthlyDuration =
-        monthlySessions.fold(0, (sum, s) => sum + s.totalDuration.inMinutes);
-  }
-  */
 
   void _updateFilteredData() {
     if (!mounted) return;
@@ -75,48 +68,60 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       _loading = true;
     });
 
-    // 1. Current Window Data
-    _filteredSessions =
-        _statsService.filterSessions(_allSessions, _selectedWindow);
+    // 1. Filter by Week Range locally (UI Layer only)
+    final start = _currentWeekStart;
+    final end = _currentWeekStart
+        .add(const Duration(days: 7))
+        .subtract(const Duration(seconds: 1));
 
-    // Old Stats Service logic removed for layout lock
-    // final muscleStats = _statsService.aggregateMuscleSets(_filteredSessions);
-    // _muscleDistribution = muscleStats.setsPerMuscle;
-    // _workouts = _filteredSessions.length;
-    // _sets = muscleStats.totalSets;
-    // _duration =_filteredSessions.fold(0, (sum, s) => sum + s.totalDuration.inMinutes);
+    // Filter sessions strictly within this week (Mon 00:00 to Sun 23:59:59)
+    _filteredSessions = _allSessions.where((s) {
+      if (s.endTime == null) return false;
+      return s.endTime!.isAfter(start) &&
+          s.endTime!.isBefore(
+              end.add(const Duration(seconds: 1))); // Inclusive safety
+    }).toList();
 
-    // New Muscle Stats (for Heatmap)
+    // 2. Heatmap Data (Normalized)
     final rawMuscleLoad =
         _muscleStatsService.computeMuscleLoad(_filteredSessions);
     _muscleIntensities = IntensityNormalizer.normalize(rawMuscleLoad);
 
-    // 2. Previous Window Data removed for layout lock
-    /*
-    if (_selectedWindow == TimeWindow.thisWeek) {
-      final lastWeekSessions =
-          _statsService.filterSessions(_allSessions, TimeWindow.lastWeek);
-      final prevStatsData = _statsService.aggregateMuscleSets(lastWeekSessions);
+    // 3. Adv Stats: Distribution (Convert InternalMuscle -> String Double)
+    // Using filtered sessions for current week view
+    final distMap =
+        _muscleStatsService.computeMuscleDistribution(_allSessions, start, end);
+    _muscleDistribution =
+        distMap.map((k, v) => MapEntry(k.name.toUpperCase(), v.toDouble()));
 
-      _prevWorkouts = lastWeekSessions.length;
-      _prevSets = prevStatsData.totalSets;
-      _prevDuration = lastWeekSessions.fold<int>(
-          0, (int sum, s) => sum + s.totalDuration.inMinutes);
-    } else {
-      _prevWorkouts = null;
-      _prevSets = null;
-      _prevDuration = null;
-    }
-    */
+    // 4. Adv Stats: Top Exercises
+    _topExercises =
+        _muscleStatsService.computeMainExercises(_allSessions, start, end);
+
+    // 5. Adv Stats: Monthly Report
+    // Uses the Month of the currently viewed week
+    _monthlyStats =
+        _muscleStatsService.computeMonthlyReport(_allSessions, start);
 
     setState(() {
       _loading = false;
     });
   }
 
-  void _onWindowChanged(TimeWindow window) {
+  void _navigateWeek(int offset) {
+    final now = DateTime.now();
+    final currentRealWeekStart = DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: now.weekday - 1));
+
     setState(() {
-      _selectedWindow = window;
+      final newDate = _currentWeekStart.add(Duration(days: 7 * offset));
+
+      // Future Check
+      if (newDate.isAfter(currentRealWeekStart)) {
+        return;
+      }
+
+      _currentWeekStart = newDate;
     });
     _updateFilteredData();
   }
@@ -199,6 +204,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final currentRealWeekStart = DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: now.weekday - 1));
+    // Determine if we can go next
+    final canGoNext = _currentWeekStart.isBefore(currentRealWeekStart);
+
     return Scaffold(
       backgroundColor: Colors.black, // Hevy is very dark/black
       appBar: AppBar(
@@ -220,21 +231,17 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Period Toggle
-                    PeriodToggle(
-                      selectedWindow: _selectedWindow,
-                      onWindowChanged: _onWindowChanged,
+                    // Week Navigator (Replaces PeriodToggle)
+                    WeekNavigator(
+                      currentWeekStart: _currentWeekStart,
+                      canGoNext: canGoNext,
+                      onPreviousTap: () => _navigateWeek(-1),
+                      onNextTap: () => _navigateWeek(1),
                     ),
                     const SizedBox(height: 32),
 
                     // HEATMAP (Layout Locked)
                     // Centered and Constrained for all screens
-                    const Text('Muscle Heatmap',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 16),
 
                     Center(
                       child: ConstrainedBox(
@@ -249,23 +256,56 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const HeatmapIntensityLegend(),
+                        const SizedBox(width: 8),
+                        Tooltip(
+                          triggerMode: TooltipTriggerMode.tap,
+                          showDuration: const Duration(seconds: 3),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2C2C2E),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          textStyle: const TextStyle(color: Colors.white),
+                          message:
+                              "Intensity based on set volume relative to your other muscles.",
+                          child: const Icon(Icons.help_outline,
+                              color: Colors.white24, size: 18),
+                        )
+                      ],
+                    ),
 
-                    // SPACE FOR LEGEND
-                    const SizedBox(height: 24),
-                    // TODO: Insert HeatmapLegend here
+                    // --- Advanced Stats Section ---
+                    if (_monthlyStats != null &&
+                        _filteredSessions.isNotEmpty) ...[
+                      const Divider(color: Colors.white10, height: 48),
 
-                    const Divider(color: Colors.white12),
-                    const SizedBox(height: 24),
+                      // muscle distribution
+                      MuscleDistributionChart(
+                          distribution: _muscleDistribution),
+                      const SizedBox(height: 24),
 
-                    // SPACE FOR DISTRIBUTION
-                    // TODO: Insert MuscleDistributionChart here
-                    const SizedBox(height: 200), // Reserved space
+                      // top exercises
+                      MainExercisesList(exercises: _topExercises),
+                      const SizedBox(height: 24),
 
-                    const Divider(color: Colors.white12),
-                    const SizedBox(height: 24),
-
-                    // SPACE FOR WEEKLY BARS
-                    // TODO: Insert WeeklySummaryBars here
+                      // monthly summary
+                      MonthlySummary(
+                        workouts: _monthlyStats!.workouts,
+                        sets: _monthlyStats!.totalSets,
+                        durationMinutes: _monthlyStats!.totalDurationMinutes,
+                      ),
+                      const SizedBox(height: 32),
+                    ] else if (_filteredSessions.isEmpty) ...[
+                      const SizedBox(height: 40),
+                      const Text("No workouts this week",
+                          style: TextStyle(color: Colors.white24)),
+                      const SizedBox(height: 40),
+                    ],
                     const SizedBox(height: 150), // Reserved space
 
                     const SizedBox(height: 48),

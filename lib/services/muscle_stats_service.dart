@@ -4,51 +4,51 @@ import '../data/exercise_info.dart';
 
 class MuscleStatsService {
   /// Compute raw set count (load) per muscle from a list of sessions.
-  ///
-  /// Rules:
-  /// - Only completed sets with (reps > 0 OR weight > 0) count.
-  /// - Compound exercises distribute the set count evenly across target muscles.
-  ///   (e.g. 1 set of Bench Press (3 muscles) = 0.33 sets for Chest, Shoulders, Triceps)
   Map<InternalMuscle, double> computeMuscleLoad(List<WorkoutSession> sessions) {
-    final Map<InternalMuscle, double> load = {};
+    final Map<InternalMuscle, double> muscleLoad = {};
 
     for (final session in sessions) {
       for (final exercise in session.exercises) {
-        // 1. Count valid sets
-        final validSets = exercise.sets.where((s) {
-          // Must be completed AND have some work done (reps or weight)
-          return s.completed && (s.reps > 0 || s.weight > 0);
-        }).length;
-
-        if (validSets == 0) continue;
-
-        // 2. Identify target muscles
-        // Use ID for specific compound logic, fallback to primaryMuscle string
+        // Get target muscles
         final targets =
             _getTargetMuscles(exercise.exerciseId, exercise.muscleGroup);
 
-        if (targets.isEmpty) {
-          // Map to 'other' if no targets found
-          load[InternalMuscle.other] =
-              (load[InternalMuscle.other] ?? 0) + validSets;
-          continue;
-        }
+        // Compute "intensity" for this exercise
+        // For now, simple set count weighting.
+        final validSets = exercise.sets.where((s) => s.completed).length;
+        if (validSets == 0) continue;
 
-        // 3. Distribute load
-        // "Compound exercises must distribute sets evenly"
-        final setsPerMuscle = validSets.toDouble() / targets.length;
+        // Distribute load
+        final loadPerMuscle =
+            validSets.toDouble(); // Simple count per muscle (shared)
 
         for (final muscle in targets) {
-          load[muscle] = (load[muscle] ?? 0) + setsPerMuscle;
+          _distributeLoad(muscle, loadPerMuscle, muscleLoad);
         }
       }
     }
 
-    return load;
+    return muscleLoad;
+  }
+
+  /// Distributes load to target muscle, preserving identity.
+  void _distributeLoad(
+      InternalMuscle muscle, double load, Map<InternalMuscle, double> map) {
+    if (muscle == InternalMuscle.other) return;
+
+    // Previous Aggregation (Reverted):
+    // We now treat Forearms, Adductors, Abductors as First-Class citizens.
+    // They will map to their own keys in the heatmap.
+
+    _addToMap(muscle, load, map);
+  }
+
+  void _addToMap(
+      InternalMuscle key, double value, Map<InternalMuscle, double> map) {
+    map[key] = (map[key] ?? 0) + value;
   }
 
   /// Resolve muscles for a given exercise.
-  /// Applies specific logic for big compounds, falls back to parsing the muscle string.
   List<InternalMuscle> _getTargetMuscles(
       String exerciseId, String fallbackMuscleStr) {
     // 1. Specific Compound overrides (The "Big 3" and common compounds)
@@ -89,11 +89,36 @@ class MuscleStatsService {
     }
 
     // 2. Fallback: Parse the primaryMuscle string
-    // e.g. "Quads / Glutes" or "Back" or "Chest"
-    // Use the exerciseInfoDatabase if valid ID, else use the string on the object
     String muscleStr = fallbackMuscleStr;
     if (exerciseInfoDatabase.containsKey(exerciseId)) {
       muscleStr = exerciseInfoDatabase[exerciseId]!.primaryMuscle;
+    }
+
+    // Handle string-based fallbacks (e.g. adductors) BEFORE parsing to enum
+    final lower = muscleStr.toLowerCase();
+
+    // Explicit Fallback Logic for strings that might parse to 'other'
+    // But now we have enums for them, so we let parseInternalMuscle handle it.
+    // Except for generic "Arms" or "Legs" which still need distribution.
+
+    // Fix for "Arms" generic
+    if (lower == 'arms') {
+      return [InternalMuscle.biceps, InternalMuscle.triceps];
+    }
+
+    // Fix for "Legs" generic
+    if (lower == 'legs') {
+      return [
+        InternalMuscle.quads,
+        InternalMuscle.hamstrings,
+        InternalMuscle.glutes,
+        InternalMuscle.calves
+      ];
+    }
+
+    // "Core" usually maps to Abs
+    if (lower == 'core') {
+      return [InternalMuscle.abs];
     }
 
     final parts = muscleStr.split(RegExp(r'[/,&]'));
@@ -106,10 +131,6 @@ class MuscleStatsService {
       }
     }
 
-    // If fallback parsing failed to find specifics but we returned 'other',
-    // maybe try to map 'other' if the string was basically empty?
-    // parseInternalMuscle returns 'other' for everything else.
-    // If we found valid muscles, return them.
     if (found.isNotEmpty) return found.toList();
 
     return [InternalMuscle.other];
@@ -126,10 +147,40 @@ class MuscleStatsService {
         // Check if this exercise hits the target muscle
         final targets =
             _getTargetMuscles(exercise.exerciseId, exercise.muscleGroup);
-        if (targets.contains(muscle)) {
+
+        // We consider it a hit if:
+        // 1. It is explicitly in the target lists
+        // 2. OR if it was a mapped fallback.
+        // Logic: if muscle is Biceps, and exercise was Forearms, we mapped Forearms -> Biceps.
+        // So we should check if _distributeLoad WOULD have sent it here.
+        // But _distributeLoad is one-way.
+        // Simplified check: If the direct target contains muscle, count it.
+        // What if user taps "Biceps" and wants to see "Forearm Curls"?
+        // Forearm Curls -> targets=[Forearms].
+        // Forearms -> Biceps/Triceps in distribution.
+        // So checking `targets.contains(muscle)` will fail if muscle is Biceps and target is Forearms.
+
+        // BETTER: Use _distributeLoad logic in reverse or simply check if this exercise contributes?
+        // Let's simlulate distribution for this exercise.
+        bool contributes = false;
+        for (final t in targets) {
+          if (t == muscle) {
+            contributes = true;
+            break;
+          }
+          // Check mapping
+          if (t == InternalMuscle.forearms &&
+              (muscle == InternalMuscle.biceps ||
+                  muscle == InternalMuscle.triceps)) {
+            contributes = true;
+            break;
+          }
+        }
+
+        if (contributes) {
           // Count completed valid sets
           final count = exercise.sets
-              .where((s) => s.completed && (s.reps > 0 || s.weight > 0))
+              .where((s) => s.completed) // Simplified count
               .length;
           if (count > 0) {
             exerciseCounts[exercise.name] =
@@ -145,4 +196,149 @@ class MuscleStatsService {
 
     return sorted;
   }
+
+  // --- Advanced Stats (Phase 11) ---
+
+  /// Computes the distribution of sets per muscle group.
+  /// Counts 1 full set for each muscle targeted by an exercise (no splitting).
+  ///
+  /// [start] and [end] are inclusive.
+  Map<InternalMuscle, int> computeMuscleDistribution(
+      List<WorkoutSession> sessions, DateTime start, DateTime end) {
+    final Map<InternalMuscle, int> distribution = {};
+
+    // Filter sessions by range
+    final filtered = sessions.where((s) {
+      if (s.endTime == null) return false;
+      return s.endTime!.isAfter(start.subtract(const Duration(seconds: 1))) &&
+          s.endTime!.isBefore(end.add(const Duration(seconds: 1)));
+    });
+
+    for (final session in filtered) {
+      for (final exercise in session.exercises) {
+        final validSets = exercise.sets.where((s) {
+          // Completed sets. For bodyweight (weight=0), ensure reps > 0.
+          return s.completed && (s.weight > 0 || s.reps > 0);
+        }).length;
+
+        if (validSets == 0) continue;
+
+        // Get targets
+        final targets =
+            _getTargetMuscles(exercise.exerciseId, exercise.muscleGroup);
+
+        // Increment for EACH target (No splitting)
+        for (final muscle in targets) {
+          if (muscle == InternalMuscle.other) continue;
+          distribution[muscle] = (distribution[muscle] ?? 0) + validSets;
+        }
+      }
+    }
+
+    return distribution;
+  }
+
+  /// Computes top exercises by set volume.
+  /// Returns top 5.
+  List<ExerciseStat> computeMainExercises(
+      List<WorkoutSession> sessions, DateTime start, DateTime end) {
+    final Map<String, int> aggMap = {}; // ID -> Sets
+
+    // Filter sessions
+    final filtered = sessions.where((s) {
+      if (s.endTime == null) return false;
+      return s.endTime!.isAfter(start.subtract(const Duration(seconds: 1))) &&
+          s.endTime!.isBefore(end.add(const Duration(seconds: 1)));
+    });
+
+    for (final session in filtered) {
+      for (final exercise in session.exercises) {
+        final validSets = exercise.sets.where((s) => s.completed).length;
+        if (validSets == 0) continue;
+
+        // Use exerciseId for aggregation, but we need a display name.
+        aggMap[exercise.exerciseId] =
+            (aggMap[exercise.exerciseId] ?? 0) + validSets;
+      }
+    }
+
+    // Convert to list and sort
+    final List<ExerciseStat> stats = [];
+
+    // We need names. Let's do a quick lookup pass
+    final Map<String, String> names = {};
+    for (final s in filtered) {
+      for (final e in s.exercises) {
+        names[e.exerciseId] = e.name;
+      }
+    }
+
+    aggMap.forEach((id, count) {
+      stats.add(ExerciseStat(
+        exerciseId: id,
+        name: names[id] ?? id,
+        totalSets: count,
+      ));
+    });
+
+    stats.sort((a, b) => b.totalSets.compareTo(a.totalSets));
+
+    return stats.take(5).toList();
+  }
+
+  /// Generates a monthly summary report.
+  MonthlyStats computeMonthlyReport(
+      List<WorkoutSession> sessions, DateTime referenceDate) {
+    // Determine start/end of month
+    final start = DateTime(referenceDate.year, referenceDate.month, 1);
+    final nextMonth = DateTime(referenceDate.year, referenceDate.month + 1, 1);
+    final end = nextMonth.subtract(const Duration(seconds: 1));
+
+    final filtered = sessions.where((s) {
+      if (s.endTime == null) return false;
+      return s.endTime!.isAfter(start.subtract(const Duration(seconds: 1))) &&
+          s.endTime!.isBefore(end.add(const Duration(seconds: 1)));
+    }).toList();
+
+    int totalSets = 0;
+    int totalDuration = 0;
+
+    for (final s in filtered) {
+      totalSets += s.totalSetsCompleted;
+      totalDuration += s.totalDuration.inMinutes;
+    }
+
+    return MonthlyStats(
+      workouts: filtered.length,
+      totalSets: totalSets,
+      totalDurationMinutes: totalDuration,
+      month: start,
+    );
+  }
+}
+
+class ExerciseStat {
+  final String exerciseId;
+  final String name;
+  final int totalSets;
+
+  ExerciseStat({
+    required this.exerciseId,
+    required this.name,
+    required this.totalSets,
+  });
+}
+
+class MonthlyStats {
+  final int workouts;
+  final int totalSets;
+  final int totalDurationMinutes;
+  final DateTime month;
+
+  MonthlyStats({
+    required this.workouts,
+    required this.totalSets,
+    required this.totalDurationMinutes,
+    required this.month,
+  });
 }
