@@ -15,6 +15,7 @@ dependencies:
   muscle_selector: ^1.0.4
   svg_path_parser: ^1.1.2
   collection: ^1.19.1
+  fl_chart: ^1.1.1
 
   # TODO: Add packages as needed
   # flutter_riverpod: ^2.4.0
