@@ -5,6 +5,7 @@ import '../widgets/profile_dashboard_tile.dart';
 import '../widgets/profile_progress_graph.dart';
 import '../widgets/training_focus_card.dart' show AICoachTeaserCard;
 import '../widgets/followers_modal.dart';
+import 'statistics_screen.dart';
 
 /// Profile Screen - Hevy-inspired compact profile view
 class ProfileScreen extends StatefulWidget {
@@ -107,7 +108,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     // Dashboard tiles (2x2)
                     ProfileDashboard(
                       onStatisticsTap: () {
-                        // Navigation stub
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const StatisticsScreen(),
+                          ),
+                        );
                       },
                       onAchievementsTap: () {
                         // Placeholder - Achievements coming soon

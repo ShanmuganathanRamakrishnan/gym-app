@@ -10,7 +10,6 @@ class UserPreferences {
   factory UserPreferences() => _instance;
   UserPreferences._internal();
 
-  bool _initialized = false;
   ExperienceLevel? _experienceLevel;
   bool _onboardingCompleted = false;
 
@@ -24,14 +23,11 @@ class UserPreferences {
   Future<void> init() async {
     // Always reload from storage to handle hot reload correctly
     await _loadFromStorage();
-    _initialized = true;
   }
 
   /// Force reload from storage (useful after app restart)
   Future<void> refresh() async {
-    _initialized = false;
     await _loadFromStorage();
-    _initialized = true;
   }
 
   /// Load preferences from storage

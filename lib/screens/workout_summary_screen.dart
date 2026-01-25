@@ -56,7 +56,9 @@ class WorkoutSummaryScreen extends StatelessWidget {
       // Ensure RoutineStore is refreshed
       await RoutineStore().refresh();
       // Pop back to workout tab
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      if (context.mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     }
   }
 

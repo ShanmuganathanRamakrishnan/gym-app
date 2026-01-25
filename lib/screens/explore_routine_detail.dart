@@ -320,10 +320,13 @@ class _ExploreRoutineDetailState extends State<ExploreRoutineDetail> {
     final userRoutine = widget.routine.toUserRoutine();
     final success = await _store.saveRoutine(userRoutine);
 
-    if (success && mounted) {
+    if (!context.mounted) return;
+
+    if (success) {
       // Navigate back to Workout tab
       Navigator.of(context).pop(true);
-    } else if (!success && mounted) {
+    } else {
+      if (!mounted) return;
       // Failed - either limit reached or duplicate
       if (_store.hasTemplate(widget.routine.id)) {
         // Duplicate - update UI

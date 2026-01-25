@@ -153,11 +153,11 @@ class _ExperienceOnboardingScreenState
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
-              ? [
+              ? const [
                   BoxShadow(
-                    color: AppColors.accent.withValues(alpha: 0.2),
+                    color: Color(0x33FC4C02),
                     blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    offset: Offset(0, 4),
                   ),
                 ]
               : null,
@@ -192,7 +192,7 @@ class _ExperienceOnboardingScreenState
               Container(
                 width: 28,
                 height: 28,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.accent,
                   shape: BoxShape.circle,
                 ),

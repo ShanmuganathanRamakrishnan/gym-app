@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'workout_history_service.dart';
 
 /// Profile aggregates computed from workout history

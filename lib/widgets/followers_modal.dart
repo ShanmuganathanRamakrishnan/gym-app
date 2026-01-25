@@ -78,16 +78,16 @@ class FollowersModal extends StatelessWidget {
               color: ProfileColors.surfaceLight,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.info_outline,
                   color: ProfileColors.textMuted,
                   size: 18,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
-                  child: const Text(
+                  child: Text(
                     'Social features coming soon',
                     style: TextStyle(
                       color: ProfileColors.textSecondary,

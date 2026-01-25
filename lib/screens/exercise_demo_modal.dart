@@ -276,7 +276,7 @@ class _ExerciseDemoModalState extends State<ExerciseDemoModal> {
           Container(
             width: 28,
             height: 28,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.accentDim,
               shape: BoxShape.circle,
             ),

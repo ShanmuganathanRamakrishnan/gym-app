@@ -33,7 +33,7 @@ class TrainingFocusCard extends StatelessWidget {
               color: ProfileColors.accent.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.track_changes,
               color: ProfileColors.accent,
               size: 24,
@@ -100,7 +100,7 @@ class TrainingFocusCard extends StatelessWidget {
           ),
 
           // Arrow
-          Icon(
+          const Icon(
             Icons.chevron_right,
             color: ProfileColors.textMuted,
           ),
@@ -120,10 +120,10 @@ class AICoachTeaserCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            ProfileColors.accent.withValues(alpha: 0.2),
-            ProfileColors.accent.withValues(alpha: 0.05),
+            Color(0x33FC4C02), // ProfileColors.accent is Color(0xFFFC4C02)
+            Color(0x0DFC4C02),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -153,11 +153,11 @@ class AICoachTeaserCard extends StatelessWidget {
           const SizedBox(width: 16),
 
           // Content
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'AI Coach',
                   style: TextStyle(
                     color: ProfileColors.textPrimary,
@@ -165,7 +165,7 @@ class AICoachTeaserCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   'Get personalized workout recommendations',
                   style: TextStyle(

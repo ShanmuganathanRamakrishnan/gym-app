@@ -36,7 +36,7 @@ class ProfileStatsRow extends StatelessWidget {
               color: ProfileColors.surfaceLight,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Center(
+            child: const Center(
               child: Icon(
                 Icons.show_chart,
                 size: 32,

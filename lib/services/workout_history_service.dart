@@ -179,6 +179,11 @@ class WorkoutHistoryService {
     return _sessions[id];
   }
 
+  /// Get all detailed sessions (for statistics)
+  List<WorkoutSession> getAllDetailedSessions() {
+    return _sessions.values.toList();
+  }
+
   /// Get recent workouts for display
   List<WorkoutHistoryEntry> getRecentWorkouts({int limit = 5}) {
     return _history.take(limit).toList();
