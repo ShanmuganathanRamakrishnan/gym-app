@@ -11,6 +11,7 @@ import '../widgets/heatmap_intensity_legend.dart';
 import '../widgets/distribution_chart.dart';
 import '../widgets/main_exercises_list.dart';
 import '../widgets/monthly_summary.dart';
+import '../widgets/pro_insights_card.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -300,6 +301,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         durationMinutes: _monthlyStats!.totalDurationMinutes,
                       ),
                       const SizedBox(height: 32),
+
+                      // PRO AI Insights
+                      ProInsightsCard(
+                        onUnlockTap: () {
+                          // Mock upgrade flow - No snackbar as requested
+                          // Ideally navigation to paywall
+                        },
+                      ),
                     ] else if (_filteredSessions.isEmpty) ...[
                       const SizedBox(height: 40),
                       const Text("No workouts this week",
