@@ -187,10 +187,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         backgroundColor: GymTheme.colors.background,
         elevation: 0,
         title: const Text('Statistics'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
       ),
       body: _loading
           ? const Center(
@@ -200,16 +196,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: GymTheme.spacing.md,
-                          vertical: GymTheme.spacing.md),
-                      child: WeekNavigator(
-                        currentWeekStart: _currentWeekStart,
-                        canGoNext: canGoNext,
-                        onPreviousTap: () => _navigateWeek(-1),
-                        onNextTap: () => _navigateWeek(1),
-                      ),
+                    WeekNavigator(
+                      currentWeekStart: _currentWeekStart,
+                      canGoNext: canGoNext,
+                      onPreviousTap: () => _navigateWeek(-1),
+                      onNextTap: () => _navigateWeek(1),
                     ),
 
                     // HEATMAP (Hero Visual)

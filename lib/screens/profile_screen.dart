@@ -4,7 +4,7 @@ import '../services/profile_repository.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_dashboard_tile.dart';
 import '../widgets/profile_progress_graph.dart';
-import '../widgets/training_focus_card.dart' show AICoachTeaserCard;
+
 import '../widgets/followers_modal.dart';
 import 'statistics_screen.dart';
 
@@ -54,23 +54,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: GymTheme.colors.background,
-      appBar: AppBar(
-        backgroundColor:
-            GymTheme.colors.background, // Match scaffold background
-        elevation: 0,
-        title: Text(
-          'Profile',
-          style: GymTheme.text.screenTitle,
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings, color: GymTheme.colors.textSecondary),
-            onPressed: () {
-              // Settings navigation stub
-            },
-          ),
-        ],
-      ),
       body: _loading
           ? Center(
               child: CircularProgressIndicator(
@@ -80,62 +63,101 @@ class _ProfileScreenState extends State<ProfileScreen> {
           : RefreshIndicator(
               color: GymTheme.colors.accent,
               onRefresh: _loadProfile,
-              child: SingleChildScrollView(
+              child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                    horizontal: GymTheme.spacing.md), // Add padding for content
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: GymTheme.spacing.md),
-                    // Compact header with avatar and inline stats
-                    ProfileHeader(
-                      username: 'Athlete',
-                      workoutCount: _aggregates?.stats.totalWorkouts ?? 0,
-                      currentStreak: _aggregates?.streaks.currentStreak ?? 0,
-                      totalHours: (_aggregates?.stats.totalMinutes ?? 0) ~/ 60,
-                      onSocialTap: _openFollowersModal,
+                slivers: [
+                  // 1. Scroll-aware Header
+                  SliverAppBar(
+                    backgroundColor: GymTheme.colors.background,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    pinned: false,
+                    floating: false,
+                    snap: false,
+                    title: Text(
+                      'Profile',
+                      style: GymTheme.text.screenTitle,
                     ),
+                    actions: [
+                      IconButton(
+                        icon: Icon(Icons.settings,
+                            color: GymTheme.colors.textSecondary),
+                        onPressed: () {
+                          // Settings navigation stub
+                        },
+                      ),
+                    ],
+                  ),
 
-                    SizedBox(height: GymTheme.spacing.md),
-
-                    // Progress graph with Volume/Reps/Duration toggle
-                    ProfileProgressGraph(
-                      recentWorkouts: _aggregates?.recentWorkouts ?? [],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Dashboard tiles (2x2)
-                    ProfileDashboard(
-                      onStatisticsTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const StatisticsScreen(),
+                  // 2. Main Content
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: GymTheme.spacing.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          // Compact header with avatar and inline stats
+                          ProfileHeader(
+                            username: 'Athlete',
+                            workoutCount: _aggregates?.stats.totalWorkouts ?? 0,
+                            currentStreak:
+                                _aggregates?.streaks.currentStreak ?? 0,
+                            totalHours:
+                                (_aggregates?.stats.totalMinutes ?? 0) ~/ 60,
+                            onSocialTap: _openFollowersModal,
                           ),
-                        );
-                      },
-                      onAchievementsTap: () {
-                        // Placeholder - Achievements coming soon
-                      },
-                      onMeasuresTap: () {
-                        // Navigation stub
-                      },
-                      onCalendarTap: () {
-                        // Navigation stub
-                      },
+
+                          const SizedBox(height: 24),
+
+                          // Graph constrained to max 180px or screen percentage (handled by SizedBox)
+                          // Using simplified Week graph logic for Sprint B next
+                          SizedBox(
+                            height: 180,
+                            child: ProfileProgressGraph(
+                              recentWorkouts: _aggregates?.recentWorkouts ?? [],
+                            ),
+                          ),
+
+                          // Sprint C: Compact Summary Row removed per user request
+                          const SizedBox(height: 16),
+
+                          // Dashboard tiles (Navigation) - PRESERVED
+                          ProfileDashboard(
+                            onStatisticsTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const StatisticsScreen(),
+                                ),
+                              );
+                            },
+                            onAchievementsTap: () {
+                              // Placeholder
+                            },
+                            onMeasuresTap: () {
+                              // Stub
+                            },
+                            onCalendarTap: () {
+                              // Stub
+                            },
+                          ),
+
+                          // Safe Bottom Padding (Nav bar + SafeArea)
+                          SizedBox(
+                              height: MediaQuery.of(context).padding.bottom +
+                                  kBottomNavigationBarHeight +
+                                  24),
+                        ],
+                      ),
                     ),
-
-                    const SizedBox(height: 16),
-
-                    // AI Coach teaser (secondary visual weight)
-                    const AICoachTeaserCard(),
-
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
     );
   }
+
+  // Removed _buildMetricsGrid as per Sprint A instructions
+  // Removed _buildMetricTile as per Sprint A instructions
 }

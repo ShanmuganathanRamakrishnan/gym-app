@@ -34,16 +34,13 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
   int _selectedIndex = 2; // 0=Volume, 1=Reps, 2=Duration (default)
 
   static const _toggleLabels = ['Volume', 'Reps', 'Duration'];
-  static const _unitLabels = [
-    'Volume (sets)',
-    'Reps (total)',
-    'Duration (min)'
-  ];
   static const _weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-  /// Generate last 7 days with data filled in
-  List<_DayData> _getLast7Days() {
+  // Sprint B: Use Current Week (Mon-Sun) instead of Last 7 Days
+  List<_DayData> _getCurrentWeekDays() {
     final now = DateTime.now();
+    // Find Monday of current week
+    final monday = now.subtract(Duration(days: now.weekday - 1));
     final days = <_DayData>[];
 
     // Create map of existing workout data
@@ -56,7 +53,8 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
         dayMap[key] = _DayData(
           date: existing.date,
           volume: existing.volume + workout.totalSets,
-          reps: existing.reps,
+          reps: existing
+              .reps, // Reps still not in model? Assuming 0 works for now as per model
           durationMinutes:
               existing.durationMinutes + workout.duration.inMinutes,
         );
@@ -70,10 +68,11 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
       }
     }
 
-    // Generate last 7 days (oldest first)
-    for (int i = 6; i >= 0; i--) {
-      final date = now.subtract(Duration(days: i));
+    // Generate Mon-Sun
+    for (int i = 0; i < 7; i++) {
+      final date = monday.add(Duration(days: i));
       final key = '${date.year}-${date.month}-${date.day}';
+      // Only include data if filtered workout actually matches typical criteria (handled by service usually)
       days.add(dayMap[key] ?? _DayData(date: date));
     }
 
@@ -92,60 +91,33 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
     }
   }
 
-  /// Generate insight parts for RichText
+  // Sprint C: Typography Polish
   Map<String, dynamic> _getInsightParts(List<_DayData> days) {
     final activeDays = days.where((d) => _getValue(d) > 0).length;
 
     if (activeDays == 0) {
-      return {
-        'prefix': 'Start your first workout this week',
-        'days': '',
-        'suffix': ''
-      };
+      return {'prefix': 'No workouts this week', 'days': '', 'suffix': ''};
     }
 
     final total = days.fold<double>(0, (sum, d) => sum + _getValue(d));
-    final todayValue = _getValue(days.last);
 
+    // Simple summary
     String prefix;
-    // Check if today had activity
-    if (todayValue > 0) {
-      switch (_selectedIndex) {
-        case 0:
-          prefix = '${todayValue.toInt()} sets today • ';
-          break;
-        case 1:
-          prefix = '${todayValue.toInt()} reps today • ';
-          break;
-        case 2:
-        default:
-          prefix = '${todayValue.toInt()} min today • ';
-          break;
-      }
-    } else {
-      // Weekly summary
-      switch (_selectedIndex) {
-        case 0:
-          prefix = '${total.toInt()} sets this week • ';
-          break;
-        case 1:
-          prefix = '${total.toInt()} reps this week • ';
-          break;
-        case 2:
-        default:
-          final hours = total ~/ 60;
-          final mins = total.toInt() % 60;
-          if (hours > 0) {
-            prefix = '${hours}h ${mins}m this week • ';
-          } else {
-            prefix = '${total.toInt()} min this week • ';
-          }
-          break;
-      }
+    switch (_selectedIndex) {
+      case 0:
+        prefix = '${total.toInt()} sets';
+        break;
+      case 1:
+        prefix = '${total.toInt()} reps';
+        break;
+      default:
+        final h = total ~/ 60;
+        final m = total.toInt() % 60;
+        prefix = h > 0 ? '${h}h ${m}m' : '${m}m';
     }
 
     return {
-      'prefix': prefix,
+      'prefix': '$prefix • ',
       'days': '$activeDays',
       'suffix': ' active days',
     };
@@ -153,13 +125,12 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
 
   @override
   Widget build(BuildContext context) {
-    final days = _getLast7Days();
+    final days = _getCurrentWeekDays();
     final hasAnyData = days.any((d) => _getValue(d) > 0);
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: GymTheme.spacing.md),
-      padding: EdgeInsets.symmetric(
-          horizontal: GymTheme.spacing.md, vertical: GymTheme.spacing.md),
+      // Sprint A: Removing external margin as parent manages layout/padding
+      // padding: EdgeInsets.all(GymTheme.spacing.md),
       decoration: BoxDecoration(
         color: GymTheme.colors.surface,
         borderRadius: BorderRadius.circular(GymTheme.radius.card),
@@ -167,86 +138,84 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Toggle buttons
-          Row(
-            children: List.generate(_toggleLabels.length, (index) {
-              final isSelected = index == _selectedIndex;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _selectedIndex = index),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    margin: EdgeInsets.only(right: index < 2 ? 6 : 0),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? GymTheme.colors.accent
-                          : GymTheme.colors.surfaceElevated,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        _toggleLabels[index],
+          // Header with Toggle
+          Padding(
+            padding: EdgeInsets.all(GymTheme.spacing.md),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Insight Text (Sprint C: Larger Typography)
+                Builder(
+                  builder: (context) {
+                    final parts = _getInsightParts(days);
+                    return RichText(
+                      text: TextSpan(
                         style: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : GymTheme.colors.textSecondary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                          color: GymTheme.colors.textSecondary,
+                          fontSize: 14, // Increased
+                          fontWeight: FontWeight.w500,
+                        ),
+                        children: [
+                          TextSpan(text: parts['prefix'] as String),
+                          TextSpan(
+                            text: parts['days'] as String,
+                            style: TextStyle(
+                              color: GymTheme.colors.accent,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          TextSpan(text: parts['suffix'] as String),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+                // Toggle Buttons (Simplified)
+                Row(
+                  children: List.generate(_toggleLabels.length, (index) {
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedIndex = index),
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                            color: _selectedIndex == index
+                                ? GymTheme.colors.accent.withValues(alpha: 0.2)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: _selectedIndex == index
+                                    ? GymTheme.colors.accent
+                                    : GymTheme.colors.textSecondary
+                                        .withValues(alpha: 0.3))),
+                        child: Text(
+                          _toggleLabels[index],
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: _selectedIndex == index
+                                  ? GymTheme.colors.accent
+                                  : GymTheme.colors.textSecondary,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-
-          SizedBox(height: GymTheme.spacing.xs),
-
-          // Unit label
-          Center(
-            child: Text(
-              _unitLabels[_selectedIndex],
-              style: TextStyle(
-                color: GymTheme.colors.textMuted,
-                fontSize: 10,
-              ),
+                    );
+                  }),
+                )
+              ],
             ),
           ),
 
-          SizedBox(height: GymTheme.spacing.sm),
-
-          // Insight line with highlighted days
-          Builder(
-            builder: (context) {
-              final parts = _getInsightParts(days);
-              return RichText(
-                text: TextSpan(
-                  style: GymTheme.text.secondary
-                      .copyWith(fontWeight: FontWeight.w500),
-                  children: [
-                    TextSpan(text: parts['prefix'] as String),
-                    TextSpan(
-                      text: parts['days'] as String,
-                      style: TextStyle(
-                        color: GymTheme.colors.accent,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    TextSpan(text: parts['suffix'] as String),
-                  ],
-                ),
-              );
-            },
+          // Graph Area
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: GymTheme.spacing.md),
+              child: hasAnyData ? _buildGraph(days) : _buildEmptyState(),
+            ),
           ),
 
-          SizedBox(height: GymTheme.spacing.sm),
-
-          // Graph area with bars
-          SizedBox(
-            height: 200, // Increased from 100 for better visibility
-            child: hasAnyData ? _buildGraph(days) : _buildEmptyState(),
-          ),
+          const SizedBox(height: 12),
         ],
       ),
     );
@@ -254,156 +223,63 @@ class _ProfileProgressGraphState extends State<ProfileProgressGraph> {
 
   Widget _buildGraph(List<_DayData> days) {
     final values = days.map(_getValue).toList();
-    final maxValue = values.reduce((a, b) => a > b ? a : b);
+    // Sprint B: Normalize against strictly week max
+    final maxValue = values.fold<double>(0, (max, v) => v > max ? v : max);
 
-    return Column(
-      children: [
-        // Bars with subtle grid lines
-        Expanded(
-          child: Stack(
+    return LayoutBuilder(builder: (context, constraints) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(7, (index) {
+          final value = values[index];
+          final ratio = maxValue > 0 ? (value / maxValue) : 0.0;
+          // Sprint C: Ensure sufficient opacity/contrast
+          final isToday = days[index].date.day == DateTime.now().day;
+
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              // Grid lines (rendered below bars)
-              Positioned.fill(
-                child: Column(
-                  children: [
-                    // 33% from top (66% height)
-                    const Spacer(flex: 1),
-                    Container(
-                      height: 1,
-                      color:
-                          GymTheme.colors.textSecondary.withValues(alpha: 0.1),
-                    ),
-                    // 66% from top (33% height)
-                    const Spacer(flex: 1),
-                    Container(
-                      height: 1,
-                      color:
-                          GymTheme.colors.textSecondary.withValues(alpha: 0.1),
-                    ),
-                    const Spacer(flex: 1),
-                  ],
+              Container(
+                width: (constraints.maxWidth / 7) - 6,
+                height: (constraints.maxHeight - 20) * ratio,
+                constraints: const BoxConstraints(
+                    minHeight: 4), // Min touch target/visibility
+                decoration: BoxDecoration(
+                  color: isToday
+                      ? GymTheme.colors.accent
+                      : GymTheme.colors.accent.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
-              // Bars (rendered above grid)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: List.generate(7, (index) {
-                  final value = values[index];
-                  final height = maxValue > 0 ? (value / maxValue) * 80 : 0.0;
-                  final hasValue = value > 0;
-                  final isToday = index == 6;
-
-                  // Determine bar color with proper emphasis
-                  Color barColor;
-                  if (hasValue) {
-                    if (isToday) {
-                      // Today's bar: slightly brighter
-                      barColor = GymTheme.colors.accent;
-                    } else {
-                      // Other active days: full accent
-                      barColor = GymTheme.colors.accent.withValues(alpha: 0.85);
-                    }
-                  } else {
-                    // Inactive days: 40% opacity placeholder
-                    barColor =
-                        GymTheme.colors.surfaceElevated.withValues(alpha: 0.4);
-                  }
-
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: Container(
-                        height: hasValue ? height.clamp(24.0, 80.0) : 8.0,
-                        decoration: BoxDecoration(
-                          color: barColor,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 6),
-
-        // Weekday labels
-        Row(
-          children: List.generate(7, (index) {
-            final day = days[index];
-            final value = values[index];
-            final hasValue = value > 0;
-            return Expanded(
-              child: Center(
-                child: Text(
-                  _weekdays[day.date.weekday - 1],
-                  style: TextStyle(
-                    color: hasValue
-                        ? GymTheme.colors.accent
-                        : GymTheme.colors.textMuted,
+              const SizedBox(height: 6),
+              Text(
+                _weekdays[index],
+                style: TextStyle(
                     fontSize: 10,
-                    fontWeight: hasValue ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
-      ],
-    );
+                    color: isToday ? Colors.white : GymTheme.colors.textMuted,
+                    fontWeight: isToday ? FontWeight.bold : FontWeight.w500),
+              )
+            ],
+          );
+        }),
+      );
+    });
   }
 
   Widget _buildEmptyState() {
-    return Column(
-      children: [
-        // Empty bars placeholder
-        Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: List.generate(7, (index) {
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Container(
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: GymTheme.colors.surfaceElevated,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              );
-            }),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.bar_chart,
+              size: 32, color: GymTheme.colors.surfaceElevated),
+          const SizedBox(height: 8),
+          Text(
+            'No workouts this week',
+            style: GymTheme.text.secondary.copyWith(fontSize: 12),
           ),
-        ),
-
-        const SizedBox(height: 6),
-
-        // Weekday labels
-        Row(
-          children: List.generate(7, (index) {
-            final now = DateTime.now();
-            final date = now.subtract(Duration(days: 6 - index));
-            final isToday = index == 6;
-            return Expanded(
-              child: Center(
-                child: Text(
-                  _weekdays[date.weekday - 1],
-                  style: TextStyle(
-                    color: isToday
-                        ? GymTheme.colors.accent
-                        : GymTheme.colors.textMuted,
-                    fontSize: 10,
-                    fontWeight: isToday ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
