@@ -5,7 +5,7 @@ import '../../services/subscription_service.dart';
 
 /// Subscription management screen.
 ///
-/// Shows current plan and available upgrade options with stub payment flow.
+/// Refined UI to visually match Hevy's premium layout and hierarchy.
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
 
@@ -51,14 +51,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               children: [
                 // Current Subscription
                 _buildSectionHeader('Current Subscription'),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 _buildCurrentPlanCard(),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
                 // Subscription Offers
                 _buildSectionHeader('Subscription Offers'),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 ...SubscriptionPlans.allProPlans.map(
                   (plan) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -66,14 +66,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
 
                 // More Information
                 _buildSectionHeader('More Information'),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 _buildInfoLinks(),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
                 // Restore Purchases
                 Center(
@@ -84,6 +84,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       style: TextStyle(
                         color: GymTheme.colors.accent,
                         fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -107,6 +108,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         fontSize: 12,
         fontWeight: FontWeight.w600,
         color: GymTheme.colors.textMuted,
+        letterSpacing: 0.5,
       ),
     );
   }
@@ -116,10 +118,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final isFree = _service.currentPlan == SubscriptionPlan.free;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: GymTheme.colors.surface,
-        borderRadius: BorderRadius.circular(GymTheme.radius.md),
+        borderRadius: BorderRadius.circular(16),
         border: !isFree
             ? Border.all(color: GymTheme.colors.accent, width: 2)
             : null,
@@ -129,17 +131,24 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         children: [
           Row(
             children: [
-              Text(
-                isFree ? 'Free Subscription' : plan.name,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isFree
-                      ? GymTheme.colors.accent
-                      : GymTheme.colors.textPrimary,
+              if (isFree)
+                Text(
+                  'Free Subscription',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: GymTheme.colors.accent,
+                  ),
+                )
+              else ...[
+                Text(
+                  plan.name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              if (!isFree) ...[
                 const SizedBox(width: 8),
                 Container(
                   padding:
@@ -160,12 +169,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               ],
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
-            plan.description ?? plan.period,
+            isFree
+                ? 'You are currently on the free plan'
+                : (plan.description ?? plan.period),
             style: TextStyle(
               fontSize: 14,
               color: GymTheme.colors.textSecondary,
+              height: 1.4,
             ),
           ),
         ],
@@ -174,27 +186,23 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Widget _buildOfferCard(PlanDetails plan) {
+    // Note: Offer cards are NOT highlighted even if active,
+    // to keep the "Current Subscription" section as the source of truth.
+    // They act as buttons to switch/buy.
     final isCurrentPlan = _service.currentPlan == plan.plan;
 
     return Material(
       color: GymTheme.colors.surface,
-      borderRadius: BorderRadius.circular(GymTheme.radius.md),
+      borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: isCurrentPlan || _processing
             ? null
             : () => _showPurchaseDialog(plan),
-        borderRadius: BorderRadius.circular(GymTheme.radius.md),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(GymTheme.radius.md),
-            border: isCurrentPlan
-                ? Border.all(color: GymTheme.colors.accent, width: 2)
-                : null,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Row(
             children: [
-              // Plan info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,10 +228,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         const SizedBox(width: 8),
                         Text(
                           plan.name.replaceFirst('PRO ', ''),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: GymTheme.colors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                       ],
@@ -232,20 +240,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     Text(
                       plan.period,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 13,
                         color: GymTheme.colors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
-              // Price
               Text(
                 plan.price,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: GymTheme.colors.textPrimary,
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -257,15 +264,20 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   Widget _buildInfoLinks() {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: GymTheme.colors.surface,
-        borderRadius: BorderRadius.circular(GymTheme.radius.md),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
           _buildInfoRow('Privacy Policy', () {}),
-          Divider(color: GymTheme.colors.divider, height: 16),
+          Divider(
+            color: GymTheme.colors.divider,
+            height: 1,
+            thickness: 1,
+            indent: 16,
+            endIndent: 16,
+          ),
           _buildInfoRow('Terms & Conditions', () {}),
         ],
       ),
@@ -275,17 +287,21 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Widget _buildInfoRow(String title, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              color: GymTheme.colors.accent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                color: GymTheme.colors.accent,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -296,11 +312,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: GymTheme.colors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(GymTheme.radius.md),
+          borderRadius: BorderRadius.circular(16),
         ),
-        title: Text(
+        title: const Text(
           'Confirm Purchase',
-          style: TextStyle(color: GymTheme.colors.textPrimary),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -308,10 +324,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           children: [
             Text(
               plan.name,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: GymTheme.colors.textPrimary,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 4),
@@ -322,23 +338,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 color: GymTheme.colors.textSecondary,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.amber.withAlpha(51),
+                color: Colors.amber.withAlpha(40),
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.withAlpha(80)),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.warning, color: Colors.amber, size: 20),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.warning_amber_rounded,
+                      color: Colors.amber, size: 20),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'STUB: This is a test purchase. No payment will be processed.',
+                      'STUB MODE: This is a test. No real payment will occur.',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 13,
                         color: GymTheme.colors.textSecondary,
+                        height: 1.3,
                       ),
                     ),
                   ),
@@ -360,9 +380,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               Navigator.pop(ctx);
               await _processPurchase(plan);
             },
-            child: Text(
-              'Confirm Purchase (STUB)',
-              style: TextStyle(color: GymTheme.colors.accent),
+            style: TextButton.styleFrom(
+              foregroundColor: GymTheme.colors.accent,
+            ),
+            child: const Text(
+              'Confirm (Stub)',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -383,6 +406,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           SnackBar(
             content: const Text('Subscription active!'),
             backgroundColor: GymTheme.colors.accent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -401,8 +425,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         SnackBar(
           content: Text(
             restored ? 'Purchases restored!' : 'No previous purchases found.',
+            style: const TextStyle(color: Colors.white),
           ),
           backgroundColor: GymTheme.colors.surface,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
