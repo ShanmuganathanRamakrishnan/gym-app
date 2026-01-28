@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../theme/gym_theme.dart';
 import '../widgets/settings_row.dart';
+import 'settings/profile_settings_screen.dart';
+import 'settings/account_settings_screen.dart';
+import 'settings/subscription_screen.dart';
+import 'settings/notifications_screen.dart';
 
 /// Settings screen matching Hevy visual structure.
 ///
@@ -191,13 +195,35 @@ class SettingsScreen extends StatelessWidget {
 
   void _navigateTo(BuildContext context, String route) {
     // Nested navigation: uses Profile tab's navigator stack
-    // Placeholder screens will be created in subsequent prompts
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Coming soon: $route'),
-        backgroundColor: GymTheme.colors.surface,
-        duration: const Duration(seconds: 1),
-      ),
+    Widget? screen;
+
+    switch (route) {
+      case '/settings/profile':
+        screen = const ProfileSettingsScreen();
+        break;
+      case '/settings/account':
+        screen = const AccountSettingsScreen();
+        break;
+      case '/settings/subscription':
+        screen = const SubscriptionScreen();
+        break;
+      case '/settings/notifications':
+        screen = const NotificationsScreen();
+        break;
+      default:
+        // Show placeholder for unimplemented screens
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Coming soon: $route'),
+            backgroundColor: GymTheme.colors.surface,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+        return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => screen!),
     );
   }
 }
