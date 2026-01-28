@@ -4,9 +4,11 @@ import '../services/profile_repository.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_dashboard_tile.dart';
 import '../widgets/profile_progress_graph.dart';
-
 import '../widgets/followers_modal.dart';
 import 'statistics_screen.dart';
+import 'measurements_screen.dart';
+import 'calendar_screen.dart';
+import 'settings_screen.dart';
 
 /// Profile Screen - Hevy-inspired compact profile view
 class ProfileScreen extends StatefulWidget {
@@ -83,7 +85,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Icon(Icons.settings,
                             color: GymTheme.colors.textSecondary),
                         onPressed: () {
-                          // Settings navigation stub
+                          // Nested navigation within Profile tab
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const SettingsScreen(),
+                            ),
+                          );
                         },
                       ),
                     ],
@@ -136,10 +143,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               // Placeholder
                             },
                             onMeasuresTap: () {
-                              // Stub
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const MeasurementsScreen(),
+                                ),
+                              );
                             },
                             onCalendarTap: () {
-                              // Stub
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const CalendarScreen(),
+                                ),
+                              );
                             },
                           ),
 
