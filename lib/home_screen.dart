@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'theme/gym_theme.dart';
 import 'main.dart';
 import 'community_post_sheet.dart';
 import 'screens/active_workout_screen.dart';
@@ -155,19 +156,12 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   '${sampleHomeData['greeting']},',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 15,
-                  ),
+                  style: GymTheme.text.secondary.copyWith(fontSize: 15),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   profile.name,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: GymTheme.text.displayLg.copyWith(fontSize: 32),
                 ),
               ],
             ),
@@ -202,20 +196,21 @@ class _HomeScreenState extends State<HomeScreen> {
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildTodayWorkout(BuildContext context, SuggestedWorkout workout) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: GymTheme.colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Label row
-          const Row(
+          Row(
             children: [
-              Icon(Icons.play_circle_filled, color: AppColors.accent, size: 18),
-              SizedBox(width: 6),
-              Text(
+              Icon(Icons.play_circle_filled,
+                  color: GymTheme.colors.accent, size: 18),
+              const SizedBox(width: 6),
+              const Text(
                 "Today's Workout",
                 style: TextStyle(
                   color: AppColors.accent,
@@ -310,11 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-      ),
+      style: GymTheme.text.sectionTitle,
     );
   }
 
@@ -426,17 +417,8 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: GymTheme.colors.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(14),
-          border:
-              Border.all(color: AppColors.surfaceLight.withValues(alpha: 0.5)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         child: Row(
           children: [

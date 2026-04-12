@@ -14,15 +14,16 @@ void main() {
 
 /// Dark mode color constants (Bridge to GymTheme)
 class AppColors {
-  static const background = Color(0xFF0E0E0E); // GymTheme.colors.background
-  static const surface = Color(0xFF1E1E1E);
-  static const surfaceLight = Color(0xFF2C2C2E);
-  static const divider = Color(0xFF2A2A2A);
+  // Hardcoded mirroring GymTheme values to preserve const support globally
+  static const background = Color(0xFF0E0E0E);
+  static const surface = Color(0xFF20201F);
+  static const surfaceLight = Color(0xFF262626);
+  static const divider = Color(0xFF131313);
   static const textPrimary = Color(0xFFFFFFFF);
   static const textSecondary = Color(0xFFB3B3B3);
-  static const textMuted = Color(0xFF6B6B6B);
-  static const accent = Color(0xFFFC4C02);
-  static const accentDim = Color(0x33FC4C02);
+  static const textMuted = Color(0xFFADAAAA);
+  static const accent = Color(0xFFFF8F6F);
+  static const accentDim = Color(0xFFFF734A);
 }
 
 class GymApp extends StatelessWidget {
@@ -106,7 +107,7 @@ class _MainShellState extends State<MainShell> {
             }
           },
           type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.background,
+          backgroundColor: Colors.black, // Persistent nav must be solid black
           selectedItemColor: AppColors.accent,
           unselectedItemColor: AppColors.textSecondary,
           items: const [

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../theme/gym_theme.dart';
 import '../main.dart';
 import '../models/workout_session.dart';
 import '../models/routine.dart';
@@ -456,16 +457,25 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
             style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
           ),
           const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _addExercise,
-            icon: const Icon(Icons.add, size: 20),
-            label: const Text('Add Exercise'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [GymTheme.colors.accentDim, GymTheme.colors.accent],
+              ),
+              borderRadius: BorderRadius.circular(GymTheme.radius.button),
+            ),
+            child: ElevatedButton.icon(
+              onPressed: _addExercise,
+              icon: const Icon(Icons.add, size: 20),
+              label: const Text('Add Exercise'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(GymTheme.radius.button)),
+              ),
             ),
           ),
         ],
@@ -577,20 +587,29 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                     // End Workout (primary)
                     Expanded(
                       flex: 2,
-                      child: ElevatedButton(
-                        onPressed: _showEndWorkoutDialog,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [GymTheme.colors.accentDim, GymTheme.colors.accent],
+                          ),
+                          borderRadius: BorderRadius.circular(GymTheme.radius.button),
                         ),
-                        child: const Text(
-                          'End Workout',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 15),
+                        child: ElevatedButton(
+                          onPressed: _showEndWorkoutDialog,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(GymTheme.radius.button)),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'End Workout',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, fontSize: 16),
+                          ),
                         ),
                       ),
                     ),
@@ -621,18 +640,17 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
           bottom: 0,
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
+              color: GymTheme.colors.surfaceContainerHigh.withValues(alpha: 0.95), // Glassmorphism base
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               border: Border(
                 top: BorderSide(
-                    color: AppColors.accent.withValues(alpha: 0.7), width: 3),
+                    color: GymTheme.colors.outlineVariant, width: 1), // Optional ghost border
               ),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Colors.black38,
-                  blurRadius: 12,
-                  offset: Offset(0, -4),
+                  color: GymTheme.colors.accent.withValues(alpha: 0.2), // Accent glow
+                  blurRadius: 20,
+                  offset: const Offset(0, -4),
                 ),
               ],
             ),
@@ -896,16 +914,16 @@ class _ExerciseCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.surfaceLight),
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.transparent, // Ghost border
+                    border: Border.all(color: GymTheme.colors.outlineVariant, width: 1.5),
+                    borderRadius: BorderRadius.circular(GymTheme.radius.button),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       '+ Add Set',
-                      style: TextStyle(
-                          color: AppColors.accent,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500),
+                      style: GymTheme.text.body.copyWith(
+                          color: GymTheme.colors.accent, 
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),

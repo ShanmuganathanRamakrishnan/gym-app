@@ -233,54 +233,54 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     return Scaffold(
       backgroundColor: GymTheme.colors.background,
-      appBar: AppBar(
-        backgroundColor: GymTheme.colors.background,
-        elevation: 0,
-        leading: const BackButton(),
-        title: GestureDetector(
-          onTap: _toggleViewMode,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(title, style: GymTheme.text.screenTitle),
-              const SizedBox(width: 4),
-              Icon(
-                _viewMode == CalendarViewMode.month
-                    ? Icons.arrow_drop_down
-                    : Icons.arrow_drop_up,
-                color: GymTheme.colors.accent,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          if (_exporting)
-            const Center(
-                child: Padding(
-              padding: EdgeInsets.only(right: 16),
-              child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white)),
-            ))
-          else
-            IconButton(
-              icon: const Icon(Icons.share, color: Colors.white),
-              onPressed: _onExportTap,
-            ),
-        ],
-      ),
       body: _loading
           ? Center(
               child: CircularProgressIndicator(color: GymTheme.colors.accent))
-          : Column(
-              children: [
-                // Navigation Header (Chevrons)
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
+          : SafeArea(
+              child: Column(
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16).copyWith(bottom: 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: _toggleViewMode,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(title, style: GymTheme.text.displayLg.copyWith(fontSize: 32)),
+                              const SizedBox(width: 4),
+                              Icon(
+                                _viewMode == CalendarViewMode.month
+                                    ? Icons.arrow_drop_down
+                                    : Icons.arrow_drop_up,
+                                color: GymTheme.colors.accent,
+                                size: 32,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_exporting)
+                          const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white))
+                        else
+                          IconButton(
+                            icon: const Icon(Icons.share, color: Colors.white),
+                            onPressed: _onExportTap,
+                          ),
+                      ],
+                    ),
+                  ),
+                  // Navigation Header (Chevrons)
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
@@ -389,6 +389,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
               ],
             ),
+          ),
     );
   }
 

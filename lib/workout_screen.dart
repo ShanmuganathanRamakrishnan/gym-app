@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'theme/gym_theme.dart';
 import 'main.dart';
 import 'models/routine.dart';
 import 'services/routine_store.dart';
@@ -105,13 +106,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
-              const Text(
+              Text(
                 'Workouts',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: GymTheme.text.displayLg.copyWith(fontSize: 32),
               ),
               const SizedBox(height: 24),
 
@@ -147,11 +144,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-      ),
+      style: GymTheme.text.sectionTitle,
     );
   }
 
@@ -233,10 +226,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         }
       },
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
+          color: GymTheme.colors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(GymTheme.radius.card),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,41 +279,52 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ActiveWorkoutScreen(
-                        workoutName: suggested.name,
-                        preloadedExercises: suggested.exercises,
-                      ),
-                    ),
-                  );
-                  // Refresh after returning from workout
-                  if (mounted) {
-                    _suggestionService.invalidateCache();
-                    await _store.refresh();
-                    _suggestedWorkout =
-                        await _suggestionService.getSuggestedWorkout(
-                      userLevel: _userLevel,
-                      lastCompletedRoutineId: null,
-                      recentRoutineIds: null,
-                    );
-                    setState(() {});
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [GymTheme.colors.accentDim, GymTheme.colors.accent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  elevation: 0,
+                  borderRadius: BorderRadius.circular(GymTheme.radius.button),
                 ),
-                child: const Text(
-                  'Start Workout',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ActiveWorkoutScreen(
+                          workoutName: suggested.name,
+                          preloadedExercises: suggested.exercises,
+                        ),
+                      ),
+                    );
+                    // Refresh after returning from workout
+                    if (mounted) {
+                      _suggestionService.invalidateCache();
+                      await _store.refresh();
+                      _suggestedWorkout =
+                          await _suggestionService.getSuggestedWorkout(
+                        userLevel: _userLevel,
+                        lastCompletedRoutineId: null,
+                        recentRoutineIds: null,
+                      );
+                      setState(() {});
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(GymTheme.radius.button),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Start Workout',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                  ),
                 ),
               ),
             ),

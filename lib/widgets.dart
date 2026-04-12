@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'theme/gym_theme.dart';
 
 // ============================================================================
 // AppBar Component
@@ -20,13 +22,13 @@ class GymAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(title),
+      title: Text(title, style: GymTheme.text.screenTitle),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),
           child: CircleAvatar(
             radius: 18,
-            backgroundColor: const Color(0xFFFC4C02),
+            backgroundColor: GymTheme.colors.accent,
             backgroundImage:
                 avatarUrl != null ? NetworkImage(avatarUrl!) : null,
             child: avatarUrl == null
@@ -66,9 +68,9 @@ class WorkoutCard extends StatelessWidget {
   Color get _accentColor {
     switch (variant) {
       case WorkoutCardVariant.notStarted:
-        return const Color(0xFFFC4C02);
+        return GymTheme.colors.accent;
       case WorkoutCardVariant.inProgress:
-        return const Color(0xFFFFA726);
+        return GymTheme.colors.accentContainer;
       case WorkoutCardVariant.completed:
         return const Color(0xFF4CAF50);
     }
@@ -89,7 +91,7 @@ class WorkoutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24), // Tonal Layering: 1.5rem padding
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -103,10 +105,9 @@ class WorkoutCard extends StatelessWidget {
                       : variant == WorkoutCardVariant.inProgress
                           ? 'In Progress'
                           : "Today's Workout",
-                  style: TextStyle(
+                  style: GymTheme.text.secondary.copyWith(
                     color: _accentColor,
                     fontWeight: FontWeight.w600,
-                    fontSize: 12,
                   ),
                 ),
               ],
@@ -114,12 +115,12 @@ class WorkoutCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: GymTheme.text.headline,
             ),
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: GymTheme.text.body,
             ),
             if (progress > 0) ...[
               const SizedBox(height: 16),
@@ -128,33 +129,42 @@ class WorkoutCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: progress,
                   minHeight: 8,
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: GymTheme.colors.surfaceContainerHighest,
                   valueColor: AlwaysStoppedAnimation<Color>(_accentColor),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 '${(progress * 100).toInt()}% complete',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: GymTheme.text.secondary,
               ),
             ],
-            const SizedBox(height: 16),
-            SizedBox(
+            const SizedBox(height: 24),
+            Container(
               width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [GymTheme.colors.accentDim, GymTheme.colors.accent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(GymTheme.radius.button),
+              ),
               child: ElevatedButton(
                 onPressed: onCtaPressed,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _accentColor,
-                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  foregroundColor: Colors.black, // on_primary_fixed
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(GymTheme.radius.button),
                   ),
                 ),
                 child: Text(
                   ctaLabel,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w700,
                     fontSize: 16,
                   ),
                 ),
@@ -203,15 +213,9 @@ class TemplateCard extends StatelessWidget {
       child: Container(
         width: 100,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: GymTheme.colors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(GymTheme.radius.card),
+          // Removed opaque shadows
         ),
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -219,16 +223,15 @@ class TemplateCard extends StatelessWidget {
           children: [
             Icon(
               _icon,
-              color: const Color(0xFFFC4C02),
+              color: GymTheme.colors.accent,
               size: 32,
             ),
             const SizedBox(height: 8),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 12,
+              style: GymTheme.text.secondary.copyWith(
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF0A0A0A),
+                color: GymTheme.colors.textPrimary,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
@@ -261,7 +264,7 @@ class RecentRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: GymTheme.colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.all(16),
@@ -271,12 +274,12 @@ class RecentRow extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFFFC4C02).withValues(alpha: 0.1),
+              color: GymTheme.colors.accentDim.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.fitness_center,
-              color: Color(0xFFFC4C02),
+              color: GymTheme.colors.accent,
               size: 20,
             ),
           ),
@@ -287,33 +290,27 @@ class RecentRow extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: GymTheme.text.body.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF0A0A0A),
+                    color: GymTheme.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   date,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF6B6B6B),
-                  ),
+                  style: GymTheme.text.secondary,
                 ),
               ],
             ),
           ),
           Text(
             detail,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B6B6B),
-            ),
+            style: GymTheme.text.body,
           ),
           const SizedBox(width: 8),
-          const Icon(
+          Icon(
             Icons.chevron_right,
-            color: Color(0xFF6B6B6B),
+            color: GymTheme.colors.textMuted,
           ),
         ],
       ),
@@ -341,10 +338,12 @@ class GymBottomNav extends StatelessWidget {
       currentIndex: selectedIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
-      backgroundColor: const Color(0xFF1A1A1A), // Dark surface
-      selectedItemColor: const Color(0xFFFC4C02), // Strava orange
-      unselectedItemColor: const Color(0xFFB3B3B3), // textSecondary
+      backgroundColor: Colors.black, // "Solid Black" background required by design
+      selectedItemColor: GymTheme.colors.accent,
+      unselectedItemColor: GymTheme.colors.textSecondary,
       showUnselectedLabels: true,
+      selectedLabelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+      unselectedLabelStyle: GoogleFonts.inter(fontSize: 12),
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),

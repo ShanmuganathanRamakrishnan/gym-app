@@ -183,11 +183,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
     return Scaffold(
       backgroundColor: GymTheme.colors.background,
-      appBar: AppBar(
-        backgroundColor: GymTheme.colors.background,
-        elevation: 0,
-        title: const Text('Statistics'),
-      ),
       body: _loading
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFFFC4C02)))
@@ -196,6 +191,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16).copyWith(bottom: 0),
+                      child: Text(
+                        'Statistics',
+                        style: GymTheme.text.displayLg.copyWith(fontSize: 32),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     WeekNavigator(
                       currentWeekStart: _currentWeekStart,
                       canGoNext: canGoNext,

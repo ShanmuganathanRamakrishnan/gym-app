@@ -97,26 +97,28 @@ class _MeasurementsScreenState extends State<MeasurementsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.accessibility_new_rounded,
-              size: 64,
-              color: GymTheme.colors.textMuted,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No measurements yet',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: GymTheme.colors.surfaceContainerHigh,
+                shape: BoxShape.circle,
               ),
+              child: Icon(
+                Icons.accessibility_new_rounded,
+                size: 64,
+                color: GymTheme.colors.accent,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No measurements yet',
+              style: GymTheme.text.headline,
             ),
             const SizedBox(height: 8),
             Text(
               'Start tracking your body progress',
-              style: TextStyle(
+              style: GymTheme.text.body.copyWith(
                 color: GymTheme.colors.textSecondary,
-                fontSize: 16,
               ),
               textAlign: TextAlign.center,
             ),
@@ -125,19 +127,28 @@ class _MeasurementsScreenState extends State<MeasurementsScreen> {
             // Primary CTA
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _navigateToAdd,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: GymTheme.colors.accent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [GymTheme.colors.accentDim, GymTheme.colors.accent],
                   ),
+                  borderRadius: BorderRadius.circular(GymTheme.radius.button),
                 ),
-                child: const Text(
-                  '+ Add Measurement',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                child: ElevatedButton(
+                  onPressed: _navigateToAdd,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(GymTheme.radius.button),
+                    ),
+                  ),
+                  child: const Text(
+                    '+ Add Measurement',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
               ),
             ),

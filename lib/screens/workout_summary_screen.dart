@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/gym_theme.dart';
 import '../main.dart';
 import '../models/workout_session.dart';
 import '../models/routine.dart';
@@ -96,13 +97,9 @@ class WorkoutSummaryScreen extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     // Title
-                    const Text(
+                    Text(
                       'Workout Complete!',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: GymTheme.text.displayLg,
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -252,18 +249,27 @@ class WorkoutSummaryScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               height: 52,
-              child: ElevatedButton(
-                onPressed: () => _finish(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                  elevation: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [GymTheme.colors.accentDim, GymTheme.colors.accent],
+                  ),
+                  borderRadius: BorderRadius.circular(GymTheme.radius.button),
                 ),
-                child: const Text(
-                  'Finish',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+                child: ElevatedButton(
+                  onPressed: () => _finish(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(GymTheme.radius.button)),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Finish',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+                  ),
                 ),
               ),
             ),
