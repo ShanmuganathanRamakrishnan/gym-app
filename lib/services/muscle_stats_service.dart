@@ -1,5 +1,5 @@
 import '../models/workout_session.dart';
-import '../models/muscle_selector_mapping.dart';
+import '../models/muscle_svg_map.dart'; // Canonical Map
 import '../data/exercise_info.dart';
 
 class MuscleStatsService {
@@ -69,6 +69,15 @@ class MuscleStatsService {
           InternalMuscle.back,
           InternalMuscle.glutes,
           InternalMuscle.hamstrings
+        ];
+
+      case 'romanian_deadlift':
+      case 'stiff_leg_deadlift':
+      case 'sumo_deadlift':
+        return [
+          InternalMuscle.hamstrings,
+          InternalMuscle.glutes,
+          InternalMuscle.back, // Lower back emphasis
         ];
 
       case 'squat':
@@ -315,6 +324,58 @@ class MuscleStatsService {
       month: start,
     );
   }
+
+  /// Computes summary stats for a given period.
+  PeriodStats computePeriodStats(
+      List<WorkoutSession> sessions, DateTime start, DateTime end) {
+    int workouts = 0;
+    int sets = 0;
+    int durationMinutes = 0;
+    double volumeKg = 0;
+
+    // Filter sessions by range
+    final filtered = sessions.where((s) {
+      if (s.endTime == null) return false;
+      return s.endTime!.isAfter(start.subtract(const Duration(seconds: 1))) &&
+          s.endTime!.isBefore(end.add(const Duration(seconds: 1)));
+    });
+
+    for (final s in filtered) {
+      workouts++;
+      sets += s.totalSetsCompleted;
+      durationMinutes += s.totalDuration.inMinutes;
+
+      // Volume: sum of (reps * weight) for all completed sets
+      for (final e in s.exercises) {
+        for (final set in e.sets) {
+          if (set.completed) {
+            volumeKg += (set.reps * set.weight);
+          }
+        }
+      }
+    }
+
+    return PeriodStats(
+      workouts: workouts,
+      totalSets: sets,
+      totalDurationMinutes: durationMinutes,
+      totalVolumeKg: volumeKg,
+    );
+  }
+}
+
+class PeriodStats {
+  final int workouts;
+  final int totalSets;
+  final int totalDurationMinutes;
+  final double totalVolumeKg;
+
+  PeriodStats({
+    required this.workouts,
+    required this.totalSets,
+    required this.totalDurationMinutes,
+    required this.totalVolumeKg,
+  });
 }
 
 class ExerciseStat {

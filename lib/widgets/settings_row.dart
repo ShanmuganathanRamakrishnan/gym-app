@@ -38,7 +38,7 @@ class SettingsRow extends StatelessWidget {
           borderRadius: BorderRadius.circular(GymTheme.radius.md),
           child: Container(
             constraints: const BoxConstraints(minHeight: 48), // A11y hit target
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: [
                 // Leading icon

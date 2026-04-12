@@ -16,6 +16,11 @@ dependencies:
   svg_path_parser: ^1.1.2
   collection: ^1.19.1
   fl_chart: ^1.1.1
+  share_plus: ^12.0.1
+  path_provider: ^2.1.5
+  uuid: ^4.5.2
+  intl: ^0.20.2
+  image_picker: ^1.2.1
 
   # TODO: Add packages as needed
   # flutter_riverpod: ^2.4.0

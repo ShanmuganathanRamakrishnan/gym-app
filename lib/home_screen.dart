@@ -6,6 +6,8 @@ import 'screens/recent_workout_summary_modal.dart';
 import 'services/suggested_workout_service.dart';
 import 'services/user_preferences.dart';
 import 'services/workout_history_service.dart';
+import 'services/settings_service.dart';
+import 'dart:io';
 
 /// Sample mock data for Home screen
 final Map<String, dynamic> sampleHomeData = {
@@ -68,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadSuggestion() async {
     await _userPrefs.init();
     await _historyService.init();
+    await SettingsService().init();
 
     final userLevel = _userPrefs.getExperienceLevelOrDefault();
     final lastRoutineId = _historyService.lastCompletedRoutineId;
@@ -140,41 +143,57 @@ class _HomeScreenState extends State<HomeScreen> {
   // 1) HEADER / GREETING
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return ListenableBuilder(
+      listenable: SettingsService(),
+      builder: (context, child) {
+        final profile = SettingsService().getProfile();
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              '${sampleHomeData['greeting']},',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 15,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${sampleHomeData['greeting']},',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  profile.name,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 2),
-            Text(
-              sampleHomeData['userName'] as String,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
+            GestureDetector(
+              onTap: () {
+                // Navigate to profile using the bottom nav controller logic preferably,
+                // but since we are IN the home tab, tapping profile might switch tabs?
+                // For now, let's leave existing behavior or just push profile?
+                // The previous code had empty onTap (Navigate to profile commented out).
+                // I will maintain the comment or attempt to switch tab if MainShell access exists.
+              },
+              child: CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColors.surfaceLight,
+                backgroundImage: profile.avatarPath != null
+                    ? FileImage(File(profile.avatarPath!))
+                    : null,
+                child: profile.avatarPath == null
+                    ? const Icon(Icons.person,
+                        color: AppColors.textMuted, size: 24)
+                    : null,
               ),
             ),
           ],
-        ),
-        GestureDetector(
-          onTap: () {
-            // Navigate to profile
-          },
-          child: const CircleAvatar(
-            radius: 22,
-            backgroundColor: AppColors.surfaceLight,
-            child: Icon(Icons.person, color: AppColors.textMuted, size: 24),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 

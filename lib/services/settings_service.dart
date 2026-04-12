@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -98,7 +99,7 @@ class UserAccount {
 ///
 /// Abstracts all SharedPreferences access from UI layer.
 /// Network calls are stubs (marked with TODO for backend integration).
-class SettingsService {
+class SettingsService with ChangeNotifier {
   static final SettingsService _instance = SettingsService._internal();
   factory SettingsService() => _instance;
   SettingsService._internal();
@@ -139,6 +140,7 @@ class SettingsService {
     }
 
     _initialized = true;
+    notifyListeners();
   }
 
   // --- Profile API ---
@@ -149,6 +151,7 @@ class SettingsService {
 
   Future<void> saveProfile(UserProfile profile) async {
     _profile = profile;
+    notifyListeners();
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_kProfileKey, jsonEncode(profile.toJson()));
@@ -167,6 +170,7 @@ class SettingsService {
   Future<bool> updateUsername(String newUsername) async {
     // TODO: Implement backend API call
     _account = _account?.copyWith(username: newUsername);
+    notifyListeners();
     await _saveAccount();
     return true;
   }
@@ -176,6 +180,7 @@ class SettingsService {
   Future<bool> updateEmail(String newEmail, String password) async {
     // TODO: Implement backend API call with password verification
     _account = _account?.copyWith(email: newEmail);
+    notifyListeners();
     await _saveAccount();
     return true;
   }
@@ -199,6 +204,7 @@ class SettingsService {
       _profile = null;
       _account = null;
       _initialized = false;
+      notifyListeners();
       return true;
     } catch (e) {
       return false;

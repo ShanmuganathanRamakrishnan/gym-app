@@ -247,4 +247,25 @@ class WorkoutSessionStore {
     _activeSession!.exercises[exerciseIndex].skipped = true;
     await _saveActiveSession();
   }
+
+  /// Remove a set from an exercise
+  Future<void> removeSet(String exerciseId, int setIndex) async {
+    if (_activeSession == null) return;
+
+    final exerciseIndex =
+        _activeSession!.exercises.indexWhere((e) => e.id == exerciseId);
+    if (exerciseIndex == -1) return;
+
+    final exercise = _activeSession!.exercises[exerciseIndex];
+    if (setIndex < 0 || setIndex >= exercise.sets.length) return;
+
+    exercise.sets.removeAt(setIndex);
+
+    // Re-index sets
+    for (int i = 0; i < exercise.sets.length; i++) {
+      exercise.sets[i].setNumber = i + 1;
+    }
+
+    await _saveActiveSession();
+  }
 }

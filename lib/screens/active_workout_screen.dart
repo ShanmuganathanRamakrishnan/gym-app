@@ -234,16 +234,38 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
       builder: (sheetContext) => _AddExerciseSheet(
         onExerciseSelected: (name, muscle) async {
           final navigator = Navigator.of(sheetContext);
+          final exerciseId = name.toLowerCase().replaceAll(' ', '_');
+
+          // Check for duplication
+          final existingCount = _store.activeSession?.exercises
+                  .where((e) => e.exerciseId == exerciseId)
+                  .length ??
+              0;
+
+          final displayName =
+              existingCount > 0 ? '$name · Block ${existingCount + 1}' : name;
+
           final exercise = WorkoutExercise(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
-            exerciseId: name.toLowerCase().replaceAll(' ', '_'),
-            name: name,
+            exerciseId: exerciseId,
+            name: displayName,
             muscleGroup: muscle,
           );
           await _store.addExercise(exercise);
           if (!mounted) return;
           setState(() {});
           navigator.pop();
+
+          if (existingCount > 0) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Added '$displayName' to workout"),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: AppColors.surface,
+              ),
+            );
+          }
         },
       ),
     );
@@ -374,6 +396,29 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
               ],
             ),
           ),
+          const SizedBox(width: 4),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
+            color: AppColors.surface,
+            onSelected: (value) {
+              if (value == 'pause') _togglePause();
+              if (value == 'end') _showEndWorkoutDialog();
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'pause',
+                child: Text(
+                  session.isPaused ? 'Resume Workout' : 'Pause Workout',
+                  style: const TextStyle(color: AppColors.textPrimary),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'end',
+                child: Text('End Workout',
+                    style: TextStyle(color: Color(0xFFEF5350))),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -478,6 +523,11 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                   },
                   onRestTimerStart: _startGlobalRestTimer,
                   onRestTimerStop: _skipGlobalRest,
+                  onSetRemoved: (setIndex) async {
+                    await _store.removeSet(
+                        session.exercises[index].id, setIndex);
+                    setState(() {});
+                  },
                 );
               }
 
@@ -686,6 +736,7 @@ class _ExerciseCard extends StatelessWidget {
   final Function(int)?
       onRestTimerStart; // Callback to trigger global rest timer
   final VoidCallback? onRestTimerStop; // Callback to stop rest timer
+  final Function(int) onSetRemoved;
 
   const _ExerciseCard({
     required this.exercise,
@@ -695,6 +746,7 @@ class _ExerciseCard extends StatelessWidget {
     required this.onRemove,
     this.onRestTimerStart,
     this.onRestTimerStop,
+    required this.onSetRemoved,
   });
 
   @override
@@ -809,18 +861,30 @@ class _ExerciseCard extends StatelessWidget {
             ...exercise.sets.asMap().entries.map((entry) {
               final index = entry.key;
               final set = entry.value;
-              return _SetRow(
-                key: ValueKey('${exercise.id}_$index'),
-                set: set,
-                restSeconds: exercise.restSeconds,
-                onRepsChanged: (reps) => onSetUpdated(index, reps, null, null),
-                onWeightChanged: (weight) =>
-                    onSetUpdated(index, null, weight, null),
-                onCompletedChanged: (completed) {
-                  onSetUpdated(index, null, null, completed);
-                },
-                onRestTimerStart: onRestTimerStart,
-                onRestTimerStop: onRestTimerStop,
+              return Dismissible(
+                key: ValueKey(set.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  color: Colors.red,
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                onDismissed: (_) => onSetRemoved(index),
+                child: _SetRow(
+                  key: ValueKey('${exercise.id}_$index'),
+                  set: set,
+                  restSeconds: exercise.restSeconds,
+                  onRepsChanged: (reps) =>
+                      onSetUpdated(index, reps, null, null),
+                  onWeightChanged: (weight) =>
+                      onSetUpdated(index, null, weight, null),
+                  onCompletedChanged: (completed) {
+                    onSetUpdated(index, null, null, completed);
+                  },
+                  onRestTimerStart: onRestTimerStart,
+                  onRestTimerStop: onRestTimerStop,
+                ),
               );
             }),
 

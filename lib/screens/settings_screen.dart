@@ -33,11 +33,11 @@ class SettingsScreen extends StatelessWidget {
           children: [
             // PRO Unlock Banner (Hevy style)
             _buildProBanner(context),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // Section: Account
             _buildSectionHeader('Account'),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             SettingsRow(
               title: 'Profile',
@@ -45,7 +45,7 @@ class SettingsScreen extends StatelessWidget {
               leadingIcon: Icons.person_outline,
               onTap: () => _navigateTo(context, '/settings/profile'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             SettingsRow(
               title: 'Account',
@@ -53,53 +53,97 @@ class SettingsScreen extends StatelessWidget {
               leadingIcon: Icons.shield_outlined,
               onTap: () => _navigateTo(context, '/settings/account'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             SettingsRow(
               title: 'Manage Subscription',
+              subtitle: 'Billing and plan details',
               leadingIcon: Icons.workspace_premium_outlined,
               trailingWidget: const ProBadge(),
               onTap: () => _navigateTo(context, '/settings/subscription'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             SettingsRow(
               title: 'Notifications',
+              subtitle: 'Workout and app alerts',
               leadingIcon: Icons.notifications_outlined,
               onTap: () => _navigateTo(context, '/settings/notifications'),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // Section: Preferences
             _buildSectionHeader('Preferences'),
-            const SizedBox(height: 8),
-
-            SettingsRow(
-              title: 'Workouts',
-              leadingIcon: Icons.fitness_center,
-              onTap: () => _navigateTo(context, '/settings/workouts'),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             SettingsRow(
               title: 'Privacy & Social',
+              subtitle: 'Profile visibility, blocking',
               leadingIcon: Icons.lock_outline,
               onTap: () => _navigateTo(context, '/settings/privacy'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             SettingsRow(
               title: 'Units',
+              subtitle: 'Weight, distance preferences',
               leadingIcon: Icons.straighten,
               onTap: () => _navigateTo(context, '/settings/units'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             SettingsRow(
               title: 'Language',
+              subtitle: 'App language',
               leadingIcon: Icons.language,
               onTap: () => _navigateTo(context, '/settings/language'),
+            ),
+            const SizedBox(height: 12),
+
+            SettingsRow(
+              title: 'Theme',
+              subtitle: 'Dark mode, colors',
+              leadingIcon: Icons.dark_mode_outlined,
+              onTap: () => _navigateTo(context, '/settings/theme'),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Section: Guides
+            _buildSectionHeader('Guides'),
+            const SizedBox(height: 12),
+
+            SettingsRow(
+              title: 'Getting Started Guide',
+              leadingIcon: Icons.menu_book_outlined,
+              onTap: () => _navigateTo(context, '/settings/guide'),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Section: Help
+            _buildSectionHeader('Help'),
+            const SizedBox(height: 12),
+
+            SettingsRow(
+              title: 'Frequently Asked Questions',
+              leadingIcon: Icons.help_outline,
+              onTap: () => _navigateTo(context, '/settings/faq'),
+            ),
+            const SizedBox(height: 12),
+
+            SettingsRow(
+              title: 'Contact Us',
+              leadingIcon: Icons.email_outlined,
+              onTap: () => _navigateTo(context, '/settings/contact'),
+            ),
+            const SizedBox(height: 12),
+
+            SettingsRow(
+              title: 'About',
+              leadingIcon: Icons.info_outline,
+              onTap: () => _navigateTo(context, '/settings/about'),
             ),
 
             // Bottom padding for nav bar

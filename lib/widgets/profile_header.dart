@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/gym_theme.dart';
+import 'dart:io';
 
 /// Compact profile header with avatar, username, and secondary info
 class ProfileHeader extends StatelessWidget {
   final String username;
-  final String? avatarUrl;
+  final String? avatarPath;
   final int workoutCount;
   final int currentStreak;
   final int totalHours;
@@ -13,7 +14,7 @@ class ProfileHeader extends StatelessWidget {
   const ProfileHeader({
     super.key,
     required this.username,
-    this.avatarUrl,
+    this.avatarPath,
     this.workoutCount = 0,
     this.currentStreak = 0,
     this.totalHours = 0,
@@ -42,13 +43,19 @@ class ProfileHeader extends StatelessWidget {
                 width: 1.5,
               ),
             ),
-            child: avatarUrl != null
+            child: avatarPath != null
                 ? ClipOval(
-                    child: Image.network(
-                      avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildDefaultAvatar(),
-                    ),
+                    child: avatarPath!.startsWith('http')
+                        ? Image.network(
+                            avatarPath!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildDefaultAvatar(),
+                          )
+                        : Image.file(
+                            File(avatarPath!),
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildDefaultAvatar(),
+                          ),
                   )
                 : _buildDefaultAvatar(),
           ),

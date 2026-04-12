@@ -52,6 +52,7 @@ class _AppColors {
   final surfaceElevated =
       const Color(0xFF2C2C2E); // Lighter surface for interaction/elevation
   final divider = const Color(0xFF2A2A2A);
+  final border = const Color(0xFF2A2A2A);
 
   final textPrimary = const Color(0xFFFFFFFF);
   final textSecondary = const Color(0xFFB3B3B3); // ~70%

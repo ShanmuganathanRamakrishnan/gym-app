@@ -50,9 +50,28 @@ class SuggestedWorkoutService {
 
     final routineStore = RoutineStore();
     await routineStore.init();
+    // Ensure stable ordering (creation order/index)
+    final userRoutines = routineStore.routines.toList();
 
-    final userRoutines = routineStore.routines;
+    final suggestion = determineSuggestedWorkout(
+      userLevel: userLevel,
+      userRoutines: userRoutines,
+      lastCompletedRoutineId: lastCompletedRoutineId,
+      recentRoutineIds: recentRoutineIds,
+    );
 
+    _cachedSuggestion = suggestion;
+    _cacheTime = DateTime.now();
+    return suggestion;
+  }
+
+  /// Pure logic for determining suggestion (Testable)
+  SuggestedWorkout determineSuggestedWorkout({
+    required ExperienceLevel userLevel,
+    required List<Routine> userRoutines,
+    String? lastCompletedRoutineId,
+    List<String>? recentRoutineIds,
+  }) {
     // RULE 1: Continue a split if active
     if (lastCompletedRoutineId != null && userRoutines.isNotEmpty) {
       final splitSuggestion = _getSplitProgression(
@@ -60,8 +79,6 @@ class SuggestedWorkoutService {
         userRoutines,
       );
       if (splitSuggestion != null) {
-        _cachedSuggestion = splitSuggestion;
-        _cacheTime = DateTime.now();
         return splitSuggestion;
       }
     }
@@ -73,8 +90,6 @@ class SuggestedWorkoutService {
         userRoutines,
       );
       if (mostUsedSuggestion != null) {
-        _cachedSuggestion = mostUsedSuggestion;
-        _cacheTime = DateTime.now();
         return mostUsedSuggestion;
       }
     }
@@ -85,18 +100,12 @@ class SuggestedWorkoutService {
           userRoutines.where((r) => r.id == lastCompletedRoutineId);
       if (matching.isNotEmpty) {
         final lastRoutine = matching.first;
-        final suggestion = _routineToSuggestion(lastRoutine, 3);
-        _cachedSuggestion = suggestion;
-        _cacheTime = DateTime.now();
-        return suggestion;
+        return _routineToSuggestion(lastRoutine, 3);
       }
     }
 
     // RULE 4: Last resort - default based on experience level
-    final defaultSuggestion = _getDefaultRoutine(userLevel);
-    _cachedSuggestion = defaultSuggestion;
-    _cacheTime = DateTime.now();
-    return defaultSuggestion;
+    return _getDefaultRoutine(userLevel);
   }
 
   /// Clear cache (call after workout completion)

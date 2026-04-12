@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/gym_theme.dart';
 import '../services/profile_repository.dart';
+import '../services/settings_service.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_dashboard_tile.dart';
 import '../widgets/profile_progress_graph.dart';
@@ -106,14 +107,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           const SizedBox(height: 8),
                           // Compact header with avatar and inline stats
-                          ProfileHeader(
-                            username: 'Athlete',
-                            workoutCount: _aggregates?.stats.totalWorkouts ?? 0,
-                            currentStreak:
-                                _aggregates?.streaks.currentStreak ?? 0,
-                            totalHours:
-                                (_aggregates?.stats.totalMinutes ?? 0) ~/ 60,
-                            onSocialTap: _openFollowersModal,
+                          ListenableBuilder(
+                            listenable: SettingsService(),
+                            builder: (context, _) {
+                              final profile = SettingsService().getProfile();
+                              return ProfileHeader(
+                                username: profile.name,
+                                avatarPath: profile.avatarPath,
+                                workoutCount:
+                                    _aggregates?.stats.totalWorkouts ?? 0,
+                                currentStreak:
+                                    _aggregates?.streaks.currentStreak ?? 0,
+                                totalHours:
+                                    (_aggregates?.stats.totalMinutes ?? 0) ~/
+                                        60,
+                                onSocialTap: _openFollowersModal,
+                              );
+                            },
                           ),
 
                           const SizedBox(height: 24),

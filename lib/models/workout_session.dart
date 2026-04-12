@@ -2,6 +2,7 @@ import 'dart:convert';
 
 /// Model representing a single set within an exercise
 class WorkoutSet {
+  String id;
   int setNumber;
   int reps;
   double weight;
@@ -9,14 +10,16 @@ class WorkoutSet {
   DateTime? completedAt;
 
   WorkoutSet({
+    String? id,
     required this.setNumber,
     this.reps = 0,
     this.weight = 0,
     this.completed = false,
     this.completedAt,
-  });
+  }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
 
   Map<String, dynamic> toJson() => {
+        'id': id,
         'setNumber': setNumber,
         'reps': reps,
         'weight': weight,
@@ -26,6 +29,7 @@ class WorkoutSet {
 
   factory WorkoutSet.fromJson(Map<String, dynamic> json) {
     return WorkoutSet(
+      id: json['id'] as String?,
       setNumber: json['setNumber'] as int,
       reps: json['reps'] as int? ?? 0,
       weight: (json['weight'] as num?)?.toDouble() ?? 0,
@@ -37,6 +41,7 @@ class WorkoutSet {
   }
 
   WorkoutSet copyWith({
+    String? id,
     int? setNumber,
     int? reps,
     double? weight,
@@ -44,6 +49,7 @@ class WorkoutSet {
     DateTime? completedAt,
   }) {
     return WorkoutSet(
+      id: id ?? this.id,
       setNumber: setNumber ?? this.setNumber,
       reps: reps ?? this.reps,
       weight: weight ?? this.weight,

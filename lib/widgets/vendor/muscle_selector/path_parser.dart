@@ -3,6 +3,7 @@ import 'package:svg_path_parser/svg_path_parser.dart';
 import 'package:collection/collection.dart';
 import 'size_controller.dart';
 import 'models/muscle.dart';
+import '../../../models/muscle_svg_map.dart';
 
 class PathParser {
   static PathParser? _instance;
@@ -23,40 +24,10 @@ class PathParser {
       'packages/muscle_selector/assets/maps/human_body.svg';
 
   // Copied from muscle_selector/src/parser.dart
-  static const muscleGroups = {
-    'chest': ['chest1', 'chest2'],
-    'shoulders': ['shoulder1', 'shoulder2', 'shoulder3', 'shoulder4'],
-    'obliques': ['obliques1', 'obliques2'],
-    'abs': ['abs1', 'abs2', 'abs3', 'abs4', 'abs5', 'abs6', 'abs7', 'abs8'],
-    'abductor': ['abductor1', 'abductor2'],
-    'biceps': ['biceps1', 'biceps2'],
-    'calves': ['calves1', 'calves2', 'calves3', 'calves4'],
-    'forearm': [
-      'forearm1',
-      'forearm2',
-      'forearm3',
-      'forearm4'
-    ], // Maps to internal: 'forearms'
-    'glutes': ['glutes1', 'glutes2'],
-    'harmstrings': [
-      'harmstrings1',
-      'harmstrings2'
-    ], // Note Typo in lib: 'harmstrings'
-    'lats': ['lats1', 'lats2'],
-    'upper_back': ['upper_back1', 'upper_back2'],
-    'quads': ['quads1', 'quads2', 'quads3', 'quads4'],
-    'trapezius': [
-      'trapezius1',
-      'trapezius2',
-      'trapezius3',
-      'trapezius4',
-      'trapezius5'
-    ],
-    'triceps': ['triceps1', 'triceps2'],
-    'adductors': ['adductors1', 'adductors2'],
-    'lower_back': ['lower_back'],
-    'neck': ['neck']
-  };
+  // Copied from muscle_selector/src/parser.dart
+  // Delegated to Canonical Map
+  static Map<String, List<String>> get muscleGroups =>
+      MuscleSvgMap.svgGroupToPaths;
 
   Set<Muscle> getMusclesByGroups(
       List<String> groupKeys, List<Muscle> muscleList) {
