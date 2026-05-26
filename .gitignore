@@ -45,6 +45,8 @@ node_modules/
 .env.local
 .env.*.local
 *.env.*
+mcp/.env
+mcp/.env.local
 infra/.env
 *.pem
 *.key
